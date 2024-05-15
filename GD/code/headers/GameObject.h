@@ -5,21 +5,20 @@
 #include <array>
 
 /* ================ GAME OBJECT ============================================ */
-/*   I am putting these Notes in because of it's sheer size it's important that 
- *   You understand these things that I will be writing down 
+/* I am putting these Notes in because of it's sheer size it's important that 
+ * You understand these things that I will be writing down 
  *
- * - This Object is many lines of code more than many others that I've already done
+ * - This Object is likely over 20,000+ lines of code (update My estimation was wrong , maybe 4,000?)
  * - There's Many Unfound Portions in this object that the community 
  *   does not know about 
  *
- * - I'm doing this mental suffering for all of you to have this object and I will for 
- *   Now be reverse engineering the smaller pices of this object so that Eventually the 
- *   bigger chunks of code will be solved by either me or someone else.
- * 
+ * - Due to the fact That I'm doing this mental suffering for all of you 
+ *   to have this object I will for Now be reverse engineering the smaller 
+ *   pices of this object so that Eventually the bigger chunks of code will be solved.
+ *  
  * - There were many additional things added in 2.2 That make this object super bulky
- *   which might be why Nobody has ever tackled writing in it's code before until now. 
- *   I've wanted to now undertake such a massive feat. To prove that the impossible is 
- *   possible in order to encourage others to get off their ass and help me.
+ *   which might be why Nobody has ever tackled this one before until now. I've wanted to 
+ *   undertake such a massive feat. To prove that the impossible is possible.
  * 
  * - Any fields that were not guessed or known about or were not listed will not be done 
  *   until later 
@@ -31,27 +30,25 @@
  * 
  * - 254 Functions Total 
  * 
- * - Functions that were skipped are marked By Reason, Complexity measured by using Ghidra's 
- *   ComputeCyclomaticComplexity script and lines of code 
- *
- * - I encourage anyone to start reversing this object for me due to it's sheer size. 
+ * - Calloc 
  */
 
 enum GameObjectType {
 };
 
-/* TODO */
 class PlayerObject;
 
-/* Temporary home for now TODO: GJSpriteColor Unless Wylie has done that one already... */
 class GJSpriteColor{
 public:
     int	m_colorID;	
     int	m_defaultColorID;	
-    float m_opacity;	
+	float m_opacity;	
     cocos2d::ccHSVValue *m_hsv;	
 
     bool m_usesHsv;
+
+    int getColorMode();
+
 };
 
 
@@ -119,7 +116,7 @@ public:
     TodoReturn getActiveColorForMode(int p0, bool p1);
     const char* getBallFrame(int p0);
     TodoReturn getBoundingRect();
-    TodoReturn getBoxOffset();
+    cocos2d::CCPoint getBoxOffset();
     TodoReturn getColorFrame(std::string p0);
     int getColorIndex();
     TodoReturn getColorKey(bool p0, bool p1);
@@ -127,37 +124,37 @@ public:
     std::string getGlowFrame(std::string p0);
     TodoReturn getGroupDisabled();
     int getGroupID(int p0);
-    TodoReturn getGroupString();
-    TodoReturn getLastPosition();
-    TodoReturn getMainColor();
-    TodoReturn getMainColorMode();
-    TodoReturn getObjectDirection();
-    TodoReturn getObjectRadius();
-    TodoReturn getObjectRectDirty();
-    TodoReturn getObjectRectPointer();
+    std::string getGroupString();
+    cocos2d::CCPoint getLastPosition();
+    GJSpriteColor* getMainColor();
+    int getMainColorMode();
+    int getObjectDirection();
+    float getObjectRadius();
+    bool getObjectRectDirty();
+    cocos2d::CCRect& getObjectRectPointer();
     int getObjectZLayer();
     int getObjectZOrder();
-    TodoReturn getOrientedRectDirty();
-    TodoReturn getOuterObjectRect();
-    TodoReturn getParentMode();
-    TodoReturn getRelativeSpriteColor(int p0);
-    TodoReturn getScalePosDelta();
-    TodoReturn getSecondaryColor();
+    bool getOrientedRectDirty();
+    cocos2d::CCRect getOuterObjectRect();
+    int getParentMode();
+    GJSpriteColor* getRelativeSpriteColor(int p0);
+    cocos2d::CCPoint getScalePosDelta();
+    GJSpriteColor* getSecondaryColor();
     TodoReturn getSecondaryColorMode();
     TodoReturn getSlopeAngle();
     TodoReturn getStartPos();
-    TodoReturn getType();
+    int getType();
     TodoReturn getUnmodifiedPosition();
     TodoReturn groupColor(cocos2d::ccColor3B const& p0, bool p1);
-    TodoReturn groupOpacityMod();
-    TodoReturn groupWasDisabled();
-    TodoReturn groupWasEnabled();
-    TodoReturn hasSecondaryColor();
+    float groupOpacityMod();
+    void groupWasDisabled();
+    void groupWasEnabled();
+    bool hasSecondaryColor();
     bool ignoreEditorDuration();
-    TodoReturn ignoreEnter();
-    TodoReturn ignoreFade();
+    bool ignoreEnter();
+    bool ignoreFade();
     bool init(char const* p0);
-    bool isBasicEnterEffect(int p0);
+    bool isBasicEnterEffect(int ID);
     bool isBasicTrigger();
     bool isColorObject();
     bool isColorTrigger();
@@ -172,8 +169,8 @@ public:
     bool isStoppableTrigger();
     bool isTrigger();
     void loadGroupsFromString(std::string p0);
-    TodoReturn makeInvisible();
-    TodoReturn makeVisible();
+    void makeInvisible();
+    void makeVisible();
     static GameObject* objectFromVector(std::vector<std::string>& p0, std::vector<void*>& p1, GJBaseGameLayer* p2, bool p3);
     TodoReturn opacityModForMode(int p0, bool p1);
     TodoReturn parentForZLayer(int p0, bool p1, int p2);
@@ -183,19 +180,19 @@ public:
     TodoReturn playPickupAnimation(cocos2d::CCSprite* p0, float p1, float p2, float p3, float p4, float p5, float p6, float p7, float p8, bool p9, float p10, float p11);
     TodoReturn playPickupAnimation(cocos2d::CCSprite* p0, float p1, float p2, float p3, float p4);
     void playShineEffect();
-    TodoReturn quickUpdatePosition();
-    TodoReturn quickUpdatePosition2();
-    TodoReturn removeColorSprite();
-    TodoReturn removeGlow();
-    TodoReturn reorderColorSprite();
-    TodoReturn resetColorGroups();
-    TodoReturn resetGroupDisabled();
-    TodoReturn resetGroups();
-    TodoReturn resetMainColorMode();
-    TodoReturn resetMID();
-    TodoReturn resetMoveOffset();
-    TodoReturn resetRScaleForced();
-    TodoReturn resetSecondaryColorMode();
+    void quickUpdatePosition();
+    void quickUpdatePosition2();
+    void removeColorSprite();
+    void removeGlow();
+    void reorderColorSprite();
+    void resetColorGroups();
+    void resetGroupDisabled();
+    void resetGroups();
+    void resetMainColorMode();
+    void resetMID();
+    void resetMoveOffset();
+    void resetRScaleForced();
+    void resetSecondaryColorMode();
     void setAreaOpacity(float p0, float p1, int p2);
     void setCustomZLayer(int p0);
     void setDefaultMainColorMode(int p0);
@@ -259,37 +256,38 @@ public:
     virtual TodoReturn transferObjectRect(cocos2d::CCRect& p0);
     virtual cocos2d::CCRect const& getObjectRect();
     virtual cocos2d::CCRect getObjectRect(float p0, float p1);
-    virtual TodoReturn getObjectRect2(float p0, float p1);
-    virtual TodoReturn getObjectTextureRect();
+    virtual cocos2d::CCRect getObjectRect2(float p0, float p1);
+    virtual cocos2d::CCRect getObjectTextureRect();
     virtual cocos2d::CCPoint getRealPosition();
     virtual void setStartPos(cocos2d::CCPoint p0);
     virtual TodoReturn updateStartValues();
     virtual void customObjectSetup(std::vector<std::string>& p0, std::vector<void*>& p1);
-    virtual gd::string getSaveString(GJBaseGameLayer* p0);
+    virtual std::string getSaveString(GJBaseGameLayer* p0);
     virtual TodoReturn claimParticle();
     virtual TodoReturn unclaimParticle();
-    virtual TodoReturn particleWasActivated();
+    virtual bool particleWasActivated();
     virtual bool isFlipX();
     virtual bool isFlipY();
     virtual void setRScaleX(float p0);
     virtual void setRScaleY(float p0);
     virtual void setRScale(float p0);
-    virtual TodoReturn getRScaleX();
-    virtual TodoReturn getRScaleY();
+    virtual float getRScaleX();
+    virtual float getRScaleY();
     virtual void setRRotation(float p0);
     virtual void triggerActivated(float p0);
     virtual void setObjectColor(cocos2d::ccColor3B const& p0);
     virtual void setGlowColor(cocos2d::ccColor3B const& p0);
-    virtual TodoReturn restoreObject();
+    virtual void restoreObject();
     virtual TodoReturn animationTriggered();
     virtual void selectObject(cocos2d::ccColor3B p0);
-    virtual TodoReturn activatedByPlayer(PlayerObject* p0);
-    virtual TodoReturn hasBeenActivatedByPlayer(PlayerObject* p0);
-    virtual TodoReturn hasBeenActivated();
-    virtual TodoReturn getOrientedBox();
-    virtual TodoReturn updateOrientedBox();
-    virtual TodoReturn getObjectRotation();
-    virtual TodoReturn updateMainColor(cocos2d::ccColor3B const& p0);
+    virtual bool activatedByPlayer(PlayerObject* p0);
+    virtual bool hasBeenActivatedByPlayer(PlayerObject* p0);
+    virtual bool hasBeenActivated();
+    virtual OBB2D* getOrientedBox();
+    virtual void updateOrientedBox();
+    virtual double getObjectRotation();
+    int getObjectZLayer();
+    virtual TodoReturn updateMainColor(cocos2d::ccColor3B const &p0);
     virtual TodoReturn updateSecondaryColor(cocos2d::ccColor3B const& p0);
     virtual int addToGroup(int p0);
     virtual void removeFromGroup(int p0);
@@ -304,10 +302,10 @@ public:
     virtual bool canReverse();
     virtual bool isSpecialSpawnObject();
     virtual bool canBeOrdered();
-    virtual TodoReturn getObjectLabel();
+    virtual int getObjectLabel();
     virtual void setObjectLabel(cocos2d::CCLabelBMFont* p0);
     virtual TodoReturn shouldDrawEditorHitbox();
-    virtual TodoReturn getHasSyncedAnimation();
+    virtual bool getHasSyncedAnimation();
     virtual bool getHasRotateAction();
     virtual bool canMultiActivate(bool p0);
     virtual TodoReturn updateTextKerning(int p0);
@@ -318,350 +316,289 @@ public:
 
 
     int m_innerSectionIndex;
-    int m_outSectionIndex;
+    int m_outerSectionIndex;
     int m_middleSectionIndex;
     bool m_hasExtendedCollision;
     cocos2d::ccColor3B m_color;
-
-    CCSprite *m_glowSprite;
-
-    bool field17_0x225;
-
-    float field21_0x229;
-
-    std::string m_particleString;
-    bool m_particleUseObjectColor;
-
-    float field38_0x240;
-
-    double m_rotationX;
-    double m_rotationY;
-
-    float m_realXPosition;
-    float m_realYPosition;
-
-    /* Not sure what to name this one other than it confuses me :( */
-    bool m_horizonalOffsetOnly;
-
-    CCObject *m_orientedBox;
-    bool m_boxCalculated;
-
-
-    CCSprite *m_glow;
-
-	/* 2 more objects should go here I belive... */
-
-    cocos2d::CCSprite *field101_0x294;
-    std::string m_claimParitcle;
- 
-
-    cocos2d::CCPoint *field107_0x2a0;
-
-
-    bool field134_0x2be;
-
-    bool m_objectRectDirty; /* Created by retype action */
-    bool m_orientedRectDirty; /* Created by retype action */
-    bool m_isChild;
-
+    bool m_usesBlackOpacity;
+    bool m_useObjectGlowColor;
+    // undefined field13_0x21e;
+    // undefined field14_0x21f;
+    float m_blackOpacity;
+    bool m_maybeIsBlending;
+    bool m_isEditor;
+    bool m_groupDisabled;
+    bool field19_0x227;
+    bool m_notLinked;
+    bool m_userCoinUpdated;
+    // undefined field22_0x22a;
+    // undefined field23_0x22b;
+    int m_colorMode;
+    struct GameObject *m_previousObjectState;
+    bool m_baseColorUsesHSV;
+    bool m_detailColorUsesHSV;
+    // undefined field28_0x236;
+    // undefined field29_0x237;
+    float m_currentPositionX;
+    float m_currentPositionY;
+    float m_UnkownRotation;
+    int field33_0x244;
+    float m_defaultRoation;
+    int field35_0x24c;
+    float m_scaleXInc;
+    float m_scaleYInc;
+    float m_realPositionX;
+    float m_realPositionY;
+    bool m_shouldLockX;
+    bool m_isFlipX;
+    bool m_isFlipY;
+    // undefined field43_0x263;
+    cocos2d::CCPoint m_obBoxOffset;
+    bool m_isOriented;
+    // undefined field46_0x26d;
+    // undefined field47_0x26e;
+    // undefined field48_0x26f;
+    cocos2d::CCPoint m_obBoxOffset2;
+    OBB2D *m_OBB2D;
+    bool m_oriented;
+    // undefined field52_0x27d;
+    // undefined field53_0x27e;
+    // undefined field54_0x27f;
+    cocos2d::CCSprite *m_glow;
+    cocos2d::CCSprite *m_glowSprite;
+    float m_spriteSizeWidth;
+    float m_spriteSizeHeight;
+    bool m_hasDetailFrame;
+    bool m_maybeActivated;
+    bool m_invisible;
+    // undefined field62_0x293;
+    struct CCParticleSystem *m_particles;
+    std::string m_particleKey;
+    bool m_isParticle;
+    bool m_updateParticleColor;
+    bool m_isRingEffect;
+    // undefined field68_0x29f;
+    cocos2d::CCPoint m_obPortalPosition;
+    bool m_particleDefaultScale;
+    // undefined field71_0x2a9;
+    // undefined field72_0x2aa;
+    // undefined field73_0x2ab;
+    cocos2d::CCRect m_objectTextureRect;
+    bool m_textureRectDirty;
+    bool m_objectPosXDirty;
+    bool m_unmodifiedPositionsDirty;
+    // undefined field78_0x2bf;
+    float m_objectTextureRectHeight;
+    cocos2d::CCRect m_transferedObjectRect;
+    bool m_objectRectDirty;
+    bool m_orientedRectDirty;
+    bool m_positionUpdated;
+    bool m_isBlendable;
+    bool m_isObjectRect2Dirty;
+    bool m_isOrientedRectDirty;
+    bool m_hasBeenActivatedP1;
+    bool m_hasBeenActivatedP2;
     int m_linkedGroup;
-
-	bool m_hasChildren;
+    int field90_0x2e0;
+    short m_mainColorMode;
+    short m_mainChildColorMode;
+    bool m_shouldBlendBaseColor;
+    bool m_shouldBlendDetailColor;
+    bool m_hasChildren;
+    bool m_isAnimatedObject;
     cocos2d::CCSprite *m_colorSprite;
-
-
+    // undefined field98_0x2f0;
+    // undefined field99_0x2f1;
+    // undefined field100_0x2f2;
+    // undefined field101_0x2f3;
+    float m_objectRadius;
+    bool m_objectRectCanRotate;
+    // undefined field104_0x2f9;
+    // undefined field105_0x2fa;
+    // undefined field106_0x2fb;
+    float m_OBB2DWidth;
+    float m_OBB2DHeight;
     int m_unqiueID;
-    GameObjectType m_objectType; /* Created by retype action */
-
-
-    double m_realPositionX;
-    double m_realPositionY;
-    cocos2d::CCPoint *m_startPos;
-    cocos2d::CCPoint *m_startPosition;
-
+    int m_type;
+    int m_previousType;
+    int m_objectType;
+    float m_unmodifiedPositionX;
+    float m_unmodifiedPositionY;
+    // undefined4 field115_0x31c;
+    double m_lastPositionX;
+    double m_lastPositionY;
+    cocos2d::CCPoint m_startPosition;
+    bool m_unk;
     bool m_hasNoAudioScale;
-
-    float field222_0x33c;
-
-
-    float m_currentScaleX;
-    float m_currentScaleY;
-
-    float field233_0x350;
-
-
-    short field242_0x35c;
-
-	/* Two more unknown short objects go here maybe? */
-
+    bool m_disabled;
+    // undefined field122_0x33b;
+    float m_defaultRotationX;
+    float m_defaultRotationY;
+    float m_defaultScaleX;
+    float m_defaultScaleY;
+    float m_UnknownScaleX;
+    float m_UnknownScaleY;
+    bool m_defaultFlipX;
+    bool m_defaultFlipY;
+    bool m_shouldHide;
+    bool m_isNotEditor;
+    int m_unused1;
+    // undefined field134_0x35c;
+    // undefined field135_0x35d;
+    bool m_unkBool;
+    // undefined field137_0x35f;
+    short field138_0x360;
+    short field139_0x362;
     short m_enterChannel;
     short m_objectMaterial;
-
-    bool m_hasNoGlow;
-    int m_targetColor;
+    // undefined field142_0x368;
+    // undefined field143_0x369;
+    short m_parentMode;
+    bool m_disableGlow;
+    // undefined field146_0x36d;
+    // undefined field147_0x36e;
+    // undefined field148_0x36f;
+    int m_colorIdx;
     int m_objectID;
-
-
-    short field267_0x380;
-    bool m_isDontEnter; /* Created by retype action */
-    bool m_isDontFade; /* Created by retype action */
-    bool m_hasNoEffects;
+    bool m_dontTransfrom;
+    bool m_defaultDontFade;
+    bool m_ignoreEnter;
+    bool m_ignoreFade;
+    bool m_dontFadeTinted;
+    bool m_isTintObject;
+    bool m_isDetailOnly;
+    // undefined field158_0x37f;
+    short m_customColorType;
+    bool m_isDontEnter;
+    bool m_isDontFade;
+    bool m_hideEffects;
     bool m_hasNoParticles;
-
-    int m_unkZOrder;
-
-    bool m_show;
-
-    bool field287_0x398;
+    // undefined field164_0x386;
+    // undefined field165_0x387;
+    int m_defaultZOrder;
+    bool m_isPortal;
+    bool m_isShowing;
+    bool m_isAudioScale;
+    // undefined field170_0x38f;
+    float m_minAudioScale;
+    float m_maxAudioScale;
+    bool m_noRotation;
+    // undefined field174_0x399;
+    // undefined field175_0x39a;
+    // undefined field176_0x39b;
     int m_property53;
-
-
-    float m_slopeDirection;
-
-
-    GJSpriteColor *m_mainColor;
-    GJSpriteColor *m_detailColor;
-
-    int m_unkZLayer;
-
+    bool m_doesntFade;
+    bool m_useGlowBGColor;
+    bool m_useGlowColor;
+    bool m_is1704;
+    float m_glowOpacityMultiplier;
+    bool m_upSlope;
+    // undefined field184_0x3a9;
+    // undefined field185_0x3aa;
+    // undefined field186_0x3ab;
+    int m_slopeType;
+    bool m_damaging;
+    // undefined field189_0x3b1;
+    // undefined field190_0x3b2;
+    // undefined field191_0x3b3;
+    float m_maybeColorOpacity;
+    struct GJSpriteColor *m_baseColor;
+    struct GJSpriteColor *m_detailColor;
+    bool m_isBlendingBatchNode;
+    // undefined field196_0x3c1;
+    // undefined field197_0x3c2;
+    // undefined field198_0x3c3;
+    int m_defaultZLayer;
+    int m_zLayer;
     int m_customZLayer;
     int m_zOrder;
-
-    bool m_isSelected;
-
-
-    bool m_hasGroupParent;
-    bool m_hasAreaParent;
-    float m_scaleX;
-    float m_scaleY;
-
-    std::array<short, 10>* m_groupContainer;
-    short m_groupsCount;
-
-    std::array<short, 10>* m_colorGroupContainer;
-    short m_colorGroupCount;
-
-    std::array<short, 10>m_opacityGroupContainer;
-    short m_opacityGroupCount;
+    bool field203_0x3d4;
+    bool m_selected;
+    // undefined field205_0x3d6;
+    // undefined field206_0x3d7;
+    void* m_textblock;
+    cocos2d::CCPoint field211_0x3dc;
+    bool m_zLayerWasSet;
+    bool field213_0x3e5;
+    bool m_toggleGroupParent;
+    bool m_toggleAreaParent;
+    float m_customScaleX;
+    float m_customScaleY;
+    std::array<short, 10>*m_groupContainer;
+    short m_groupCount;
+    bool m_hasGroupParentsString;
+    std::array<short, 10>*m_colorArray;
+    short m_totalColors;
+    // undefined field226_0x3fe;
+    // undefined field227_0x3ff;
+    std::array<short, 10>* m_opacityMod;
+    // undefined field229_0x402;
+    // undefined field230_0x403;
+    short m_opacityGroupSize;
     short m_editorLayer;
     short m_editorLayer2;
-    int field359_0x40c;
-
-
+    // undefined field234_0x40a;
+    // undefined field235_0x40b;
+    int m_numOfGroups;
+    bool m_updateCustomContentSize;
+    bool m_hasContentSize;
     bool m_isNoTouch;
-
-
-    cocos2d::CCPoint *m_lastPosition;
-
-
+    // undefined field240_0x413;
+    cocos2d::CCSize m_size;
+    cocos2d::CCPoint m_position;
+    int field243_0x424;
+    int field244_0x428;
+    int field245_0x42c;
+    bool field246_0x430;
+    cocos2d::ccColor3B m_color2;
+    int m_classID;
+    bool m_isTrigger;
+    bool field250_0x439;
+    // undefined field251_0x43a;
+    bool m_ignoreEditorDuration;
+    bool m_isStoppableTrigger;
+    bool m_isEditorSpawnableTrigger;
+    bool m_dontCountTowardsLimit;
     bool m_isHighDetail;
-
-
-    GJEffectManager *m_effectManager;
-
-
+    struct CCNode *m_colorSprite1;
+    struct CCNode *m_colorSprite2;
+    struct GJEffectManager *m_effectManager;
+    bool m_unkEffectObject;
+    bool m_isNotDamaging;
+    bool m_isStaticGroup;
+    // undefined1 m_unkRotation;
+    bool m_isPixelScaleObject;
     bool m_isPassable;
-    bool m_isHide;
+    bool m_alwaysHide;
     bool m_isNonStickX;
     bool m_isNonStickY;
-    bool m_isIceBlock;
+    bool m_iceBlock;
     bool m_isGripSlope;
-    bool m_isScaleStick;
+    bool m_applyScaleStick;
     bool m_isExtraSticky;
-    bool m_isDontBoostY;
-    bool m_isDontBoostX;
-
-
-    int m_ordValue;
+    bool m_dontBoost;
+    bool m_dontBoostX;
+    bool m_is749;
+    bool field276_0x45c;
+    // undefined field277_0x45d;
+    // undefined field278_0x45e;
+    // undefined field279_0x45f;
+    float field280_0x460;
+    float m_scaleModX;
+    float m_scaleModY;
+    int m_property155;
     int m_property156;
-	// bool m_bUnk3;
-	// bool m_bIsBlueMaybe;
-	// float m_fUnk2;
-	// float m_fUnk;
-	// float m_fUnk3;
-	// float m_fUnk4;
-	// bool m_bUnk;
-	// float m_fAnimSpeed2;
-	// bool m_bIsEffectObject;
-	// bool m_bRandomisedAnimStart;
-	// float m_fAnimSpeed;
-	// bool m_bBlackChild;
-	// bool m_bUnkOutlineMaybe;
-	// float m_fBlackChildOpacity;
-	// bool field_21C;
-	// bool m_bEditor;
-	// bool m_bGroupDisabled;
-	// bool m_bColourOnTop;
-	// // GJSpriteColor* m_pMainColourMode;
-	// // GJSpriteColor* m_pSecondaryColourMode;
-	// bool m_bCol1;
-	// bool m_bCol2;
-	// cocos2d::CCSize m_obPos;
-	// float m_fUnkRotationField;
-	// bool m_bTintTrigger;
-	// bool m_bIsFlipX;
-	// bool m_bIsFlipY;
-	// cocos2d::CCPoint m_obBoxOffset;
-	// bool m_bIsOriented;
-	// cocos2d::CCPoint m_obBoxOffset2;
-	// OBB2D* m_pObjectOBB2D;
-	// bool m_bOriented;
-	// cocos2d::CCSprite* m_pGlowSprite;
-	// bool m_bNotEditor;
-	// cocos2d::CCAction* m_pAction;
-	// bool m_bUnk1;
-	// bool m_bRunActionWithTag;
-	// bool m_bObjectPoweredOn;
-	// cocos2d::CCSize m_obObjectSize;
-	// bool m_bTrigger;
-	// bool m_bActive;
-	// bool m_bAnimationFinished;
-	// cocos2d::CCParticleSystemQuad* m_pParticleSystem;
-	// std::string m_sEffectPlistName;
-	// bool m_bParticleAdded;
-	// bool m_bHasParticles;
-	// bool m_bUnkCustomRing;
-	// cocos2d::CCPoint m_obPortalPosition;
-	// bool m_bUnkParticleSystem;
-	// cocos2d::CCRect m_obObjectTextureRect;
-	// bool m_bTextureRectDirty;
-	// float m_fRectXCenterMaybe;
-	// cocos2d::CCRect m_obObjectRect2;
-	// bool m_bIsObjectRectDirty;
-	// bool m_bIsOrientedRectDirty;
-	// bool m_bHasBeenActivated;
-	// bool m_bHasBeenActivatedP2;
-	// BYTE PAD2[8];
-	// bool m_bObjectRectDirty;
-	// bool m_bOrientedRectDirty;
-	// bool m_bUniqueActivated;
-	// bool m_bActivated;
-	// bool m_bCollectable;
-	// bool m_bPulseToBPM;
-	// bool m_bCanRotateFree;
-	// int m_nLinkedGroupID;
-	// bool m_bRotationTrigger;
-	// int m_nCustomRotationSpeed;
-	// bool m_bDisableRotation;
-	// bool m_bIsMainColBlack;
-	// bool field_2CA;
-	// bool m_bBlending;
-	// bool m_bBlending2;
-	// bool m_bUnk2;
-	// bool field_2CE;
-	// cocos2d::CCSprite* m_pColourSprite;
-	// bool m_bIgnoreScreenCheck;
-	// float m_fRadius;
-	// bool m_bSnappedRotation;
-	// cocos2d::CCSize m_obScaleMod;
-	// int m_nUniqueID;
-	// // GameObjectType m_eGameObjectType;
-	// int m_nSectionIdx;
-	// bool m_bTouchTriggered;
-	// bool m_bSpawnTriggered;
-	// cocos2d::CCPoint m_obStartPos;
-	// std::string m_sTextureFrameName;
-	// bool m_bUseAudioScale;
-	// bool m_bSleeping;
-	// float m_fRotation;
-	// cocos2d::CCSize m_obStartScale;
-	// bool m_bStartFlipX;
-	// bool m_bStartFlipY;
-	// bool m_bShouldHide;
-	// float m_fSpawnXPosition;
-	// bool m_bInvisible;
-	// float m_fEnterAngle;
-	// int m_eActiveEnterEffect;
-	// int m_nParentMode;
-	// bool m_bDisableGlow;
-	// int m_nColourIdx;
-	// float m_fScale;
-	// int m_nObjectID;
-	// bool m_bDontTransform;
-	// bool m_bDefaultDontFade;
-	// bool m_bIgnoreEnter;
-	// bool m_bIgnoreFade;
-	// bool m_bDontFadeTinted;
-	// bool m_bTintObject;
-	// bool m_bDetailColourObject;
-	// bool m_bDontEnter;
-	// bool m_bDontFade;
-	// bool m_bStateVar;
-	// int m_nDefaultZOrder;
-	// bool m_bPortal;
-	// bool m_bLockColourAsChild;
-	// bool m_bCustomAudioScale;
-	// int m_fMinAudioScale;
-	// int m_fMaxAudioScale;
-	// bool m_bUnkParticleSystem2;
-	// int m_nSecretCoinID;
-	// int m_unkUnusedSaveStringKey53;
-	// bool m_bInvisibleMode;
-	// bool m_bGlowUserBackgroundColour;
-	// bool m_bUseSpecialLight;
-	// bool m_bOrbOrPad;
-	// float m_fGlowOpacityMod;
-	// bool m_bUpSlope;
-	// int m_eSlopeType;
-	// float m_fSlopeAngle;
-	// bool m_bHazardousSlope;
-	// float dword18C;
-	// // GJSpriteColor* m_pColour1;
-	// // GJSpriteColor* m_pColour2;
-	// bool m_bBlendingBatchNode;
-	// int m_nDefaultZLayer;
-	// int m_nZLayer;
-	// int m_nZOrder;
-	// std::string m_sText;
-	// bool m_bSpecialObject;
-	// bool m_bObjectSelected2;
-	// bool m_bObjectSelected;
-	// int m_nGlobalClickCounter;
-	// cocos2d::CCPoint m_obUnk2;
-	// bool dword1BC;
-	// bool field_3AD;
-	// float m_fMultiScaleMultiplier;
-	// std::vector<short> m_nGroupContainer;
-	// int m_nGroupCount;
-	// std::vector<short> m_nColourGroupContainer;
-	// int m_nColourGroupCount;
-	// std::vector<short> m_nOpacityGroupContainer;
-	// int m_nOpacityGroupCount;
-	// int m_nEditorLayer1;
-	// int m_nEditorLayer2;
-	// int m_nGroupDisabled;
-	// bool dword1EC;
-	// bool m_bUseCustomContentSize;
-	// bool field_3DE;
-	// cocos2d::CCSize m_obUnkSize;
-	// cocos2d::CCPoint m_obLastPosition;
-	// bool m_bDidUpdateLastPosition;
-	// bool m_bUpdateLastPos;
-	// BYTE PAD3[4];
-	// bool m_bSyncedAnimation;
-	// int m_eLavaBubbleColourID;
-	// bool dword210;
-	// bool field_401;
-	// bool field_402;
-	// bool field_403;
-	// bool dword214;
-	// bool m_bSpawnObject;
-	// bool m_bHasObjectCount;
-	// int m_nAnimFrame;
-	// bool m_bHighDetail;
-	// void* m_pMainColourSprite;
-	// void* m_pSecondaryColourSprite;
-	// GJEffectManager* m_pEffectManager;
-	// bool dword22C;
-	// bool m_bIsDecoration;
-	// bool m_bOptimisedGroup;
-	// bool field_41F;
-	// bool dword230;
-	// int m_eZagColour;
-	// bool m_bMultiActivate;
-	// cocos2d::_ccColor3B m_Colour;
+    unsigned char m_opacity;
+    // undefined field286_0x475;
+    // undefined field287_0x476;
+    // undefined field288_0x477;
+    int field289_0x478;
+    // undefined4 field290_0x47c;
+    // undefined4 field291_0x480;
+    // undefined field292_0x484;
+    bool m_isUIObject;
+    bool field294_0x486;
+    
 };
 
 #endif // GAMEOBJECT_H
-
-#endif // __GAMEOBJECT_H__
