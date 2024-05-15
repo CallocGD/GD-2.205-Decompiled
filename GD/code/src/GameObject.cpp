@@ -8,7 +8,6 @@
 /* I will be posting complexities of functions from ghidra's own
  * built-in scripts to show their difficulty so if I skip over any 
  * of them, you'll know why */
-
 void GameObject::activateObject()
 {
     return;
@@ -1254,8 +1253,8 @@ int GameObject::getType()
 
 cocos2d::CCPoint GameObject::getUnmodifiedPosition(){
     return CCPointMake(
-        m_lastPositionX - (double)m_currentPositionX, 
-        m_lastPositionY - (double)m_currentPositionY
+        m_lastPositionX - m_currentPositionX, 
+        m_lastPositionY - m_currentPositionY
     )
 };
 
@@ -1321,266 +1320,219 @@ bool GameObject::hasSecondaryColor()
     return m_colorSprite != nullptr;
 }
 
-/* TODO: Optimize "ignoreEditorDuration" into a Switch Block... */
+
+/* Shoutouts to iAndy_HD3 for helping me figure out what was actually going on here... */
 
 bool GameObject::ignoreEditorDuration()
 {
-    int ID;
-    int m_objectID;
-    uint ID2;
-    bool is7e0;
-    bool i;
-  
-    if (m_type == 0x1e) {
+
+    if (m_type == 30)
+        return true;
+    if (m_objectID < 287) {
+        if (m_objectID < 286) {
+            switch (m_objectID) {
+                case 10:
+                case 11:
+                case 12:
+                case 13:
+                case 22:
+                case 23:
+                case 24:
+                case 25:
+                case 26:
+                case 27:
+                case 28:
+                case 31:
+                case 32:
+                case 33:
+                case 35:
+                case 36:
+                case 45:
+                case 46:
+                case 47:
+                case 55:
+                case 56:
+                case 57:
+                case 58:
+                case 59:
+                case 67:
+                case 84:
+                case 99:
+                case 101:
+                case 111:
+                case 140:
+                case 141:
+                case 142:
+                case 200:
+                case 201:
+                case 202:
+                case 203:
+                    return true;
+                default:
+                    return false;
+                }
+        }
         return true;
     }
-    m_objectID = m_objectID;
-    if (0x71b < m_objectID) {
-    if (m_objectID < 0xb6f) {
-      if (0xb6c < m_objectID) {
-        return true;
-      }
-      if (m_objectID < 0x811) {
-        if (0x80d < m_objectID) {
-          return true;
-        }
-        if (m_objectID == 0x77b) {
-          return true;
-        }
-        if (m_objectID < 0x77c) {
-          if (m_objectID == 0x743) {
+    if (m_objectID < 1935)
+    {
+        if (m_objectID < 1931)
+            return false;
+        if (m_objectID > 1585) {
+            if (m_objectID > 1704) {
+                switch (m_objectID) {
+                case 1751:
+                case 1755:
+                case 1811:
+                case 1812:
+                case 1813:
+                case 1815:
+                case 1816:
+                case 1817:
+                case 1818:
+                case 1819:
+                case 1829:
+                case 1859:
+                case 1912:
+                case 1915:
+                case 1917:
+                    return true;
+                default:
+                    return false;
+                }
+            }
+            if (m_objectID != 1704) {
+                switch (m_objectID) {
+                    case 1594:
+                    case 1595:
+                    case 1611:
+                    case 1612:
+                    case 1613:
+                    case 1616:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
             return true;
-          }
-          if (m_objectID == 0x778) {
+        }
+        if (m_objectID == 1585)
             return true;
-          }
-          ID = 0x725;
-        }
-        else {
-          if (0x78f < m_objectID) {
-            is7e0 = m_objectID == 0x7e0;
-            goto LAB_0035aa14;
-          }
-          if (0x78a < m_objectID) {
+        if (m_objectID <= 1022)
+        {
+            if (m_objectID < 1022) {
+                switch (m_objectID){
+                    case 660:
+                    case 745:
+                    case 747:
+                    case 749:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
             return true;
-          }
-          ID = 0x77d;
         }
-      }
-      else if (m_objectID < 0xb55) {
-        if (0xb52 < m_objectID) {
-          return true;
-        }
-        if (m_objectID < 0x816) {
-          if (0x813 < m_objectID) {
+        if (m_objectID > 1268)
+            return m_objectID = 1329 && m_objectID = 1334;
+        if (m_objectID == 1268)
             return true;
-          }
-          ID = 0x812;
-        }
-        else {
-          ID = 0xb32;
-        }
-      }
-      else {
-        if (m_objectID < 0xb56) {
-          return false;
-        }
-        if (m_objectID < 0xb5a) {
-          return true;
-        }
-        ID = 0xb5b;
-      }
+        return m_objectID == 1049;
     }
-    else if (m_objectID < 0xe1a) {
-      if (0xe15 < m_objectID) {
-        return true;
-      }
-      if (m_objectID == 0xbd3) {
-        return true;
-      }
-      if (m_objectID < 0xbd4) {
-        if (m_objectID < 0xbbc) {
-          return false;
+    if (m_objectID > 3027)
+    {
+        if (m_objectID > 3620)
+        {
+            switch (m_objectID)
+            {
+            case 3640:
+            case 3641:
+            case 3642:
+            case 3643:
+            case 3645:
+            case 3655:
+            case 3660:
+            case 3661:
+            case 3662:
+                return true;
+            default:
+                return false;
+            }
         }
-        if (m_objectID < 0xbc3) {
-          return true;
-        }
-        i = 7 < m_objectID - 0xbc8U;
-        is7e0 = m_objectID - 0xbc8U == 8;
-        goto LAB_0035aaba;
-      }
-      if (m_objectID == 0xe10) {
-        return true;
-      }
-      if (m_objectID < 0xe11) {
-        i = 3 < m_objectID - 0xbd5U;
-        is7e0 = m_objectID - 0xbd5U == 4;
-        goto LAB_0035aaba;
-      }
-      ID = 0xe14;
-    }
-    else {
-      if (m_objectID < 0xe3c) {
-        if (0xe37 < m_objectID) {
-          return true;
-        }
-        if (m_objectID < 0xe1c) {
-          return false;
-        }
-        if (m_objectID < 0xe20) {
-          return true;
-        }
-        ID = -0xe21;
-        goto LAB_0035aaa0;
-      }
-      if (m_objectID == 0xe47) {
-        return true;
-      }
-      if (0xe47 < m_objectID) {
-        ID2 = m_objectID - 0xe4c;
-        goto LAB_0035aab8;
-      }
-      ID = 0xe3d;
-    }
-LAB_0035aa12:
-    is7e0 = m_objectID == ID;
-LAB_0035aa14:
-    if (!is7e0) {
-      return false;
-    }
-    return true;
-  }
-  if (0x716 < m_objectID) {
-    return true;
-  }
-  if (m_objectID < 0x120) {
-    if (0x11d < m_objectID) {
-      return true;
-    }
-    if (0x3b < m_objectID) {
-      if (m_objectID == 0x6f) {
-        return true;
-      }
-      if (m_objectID < 0x70) {
-        if (m_objectID == 0x54) {
-          return true;
-        }
-        if (m_objectID < 0x55) {
-          is7e0 = m_objectID == 0x43;
-        }
-        else {
-          if (m_objectID == 99) {
+        if (m_objectID == 3617)
             return true;
-          }
-          is7e0 = m_objectID == 0x65;
+        if (m_objectID > 3604)
+        {
+            switch (m_objectID)
+            {
+            case 3606:
+            case 3607:
+            case 3608:
+            case 3609:
+            case 3612:
+            case 3613:
+            case 3614:
+            case 3615:
+                return true;
+            default:
+                return false;
+            }
         }
-        goto LAB_0035aa14;
-      }
-      if (m_objectID < 0x8c) {
+        if (m_objectID == 3604)
+            return true;
+        if (m_objectID == 3029)
+            return false;
+        if (m_objectID == 3033)
+            return true;
+        return m_objectID == 3600;
+    }
+    if (m_objectID == 3027)
+        return true;
+    if (m_objectID > 2900) {
+        switch (m_objectID) {
+            case 2902:
+            case 2903:
+            case 2904:
+            case 2905:
+            case 2907:
+            case 2925:
+            case 2926:
+            case 3004:
+            case 3005:
+            case 3006:
+            case 3007:
+            case 3008:
+            case 3009:
+            case 3010:
+            case 3016:
+            case 3017:
+            case 3018:
+            case 3019:
+            case 3020:
+            case 3021:
+            case 3022:
+            case 3023:
+            case 3024:
+                return true;
+            default:
+                return false;
+        }
+    }
+    if (m_objectID == 2899)
+        return true;
+    if (m_objectID > 2066)
+    {
+        if (m_objectID == 2068)
+            return false;
+        if (m_objectID == 2069)
+            return true;
+        return m_objectID == 2866;
+    }
+    if (m_objectID == 2066 || m_objectID == 2016)
+        return true;
+    if (m_objectID == 2061)
         return false;
-      }
-      if (m_objectID < 0x8f) {
-        return true;
-      }
-        ID = -200;
-    LAB_0035aaa0:
-        i = 2 < (uint)(m_objectID + ID);
-        is7e0 = m_objectID + ID == 3;
-        goto LAB_0035aaba;
-      }
-      if (0x36 < m_objectID) {
-        return true;
-      }
-      if (m_objectID < 0x22) {
-        if (0x1e < m_objectID) {
-          return true;
-        }
-        if (m_objectID < 10) {
-          return false;
-        }
-        if (m_objectID < 0xe) {
-          return true;
-        }
-        i = 5 < m_objectID - 0x16U;
-        is7e0 = m_objectID - 0x16U == 6;
-        goto LAB_0035aaba;
-      }
-      if (m_objectID < 0x23) {
-        return false;
-      }
-      if (m_objectID < 0x25) {
-        return true;
-      }
-      ID2 = m_objectID - 0x2d;
-    }
-    else {
-      if (m_objectID == 0x631) {
-        return true;
-      }
-      if (m_objectID < 0x632) {
-        if (m_objectID == 0x3fe) {
-          return true;
-        }
-        if (m_objectID < 0x3ff) {
-          if (m_objectID == 0x2e9) {
-            return true;
-          }
-          if (m_objectID < 0x2ea) {
-            is7e0 = m_objectID == 0x294;
-            goto LAB_0035aa14;
-          }
-          if (m_objectID == 0x2eb) {
-            return true;
-          }
-          ID = 0x2ed;
-        }
-        else {
-          if (m_objectID == 0x4f4) {
-            return true;
-          }
-          if (0x4f4 < m_objectID) {
-            i = 4 < m_objectID - 0x531U;
-            is7e0 = m_objectID - 0x531U == 5;
-            goto LAB_0035aaba;
-          }
-          ID = 0x419;
-        }
-        goto LAB_0035aa12;
-      }
-      if (m_objectID == 0x650) {
-        return true;
-      }
-      if (m_objectID < 0x651) {
-        if (m_objectID < 0x63a) {
-          return false;
-        }
-        if (m_objectID < 0x63c) {
-          return true;
-        }
-        ID2 = m_objectID - 0x64b;
-      }
-      else {
-        if (m_objectID == 0x6db) {
-          return true;
-        }
-        if (m_objectID < 0x6dc) {
-          if (m_objectID == 0x6a8) {
-            return true;
-          }
-          ID = 0x6d7;
-          goto LAB_0035aa12;
-        }
-        ID2 = m_objectID - 0x713;
-      }
-    }
-    LAB_0035aab8:
-      i = 1 < ID2;
-      is7e0 = ID2 == 2;
-    LAB_0035aaba:
-    if (i && !is7e0) {
-        return false;
-    }
-    return true;
+    return m_objectID == 2064;
 }
 
 bool GameObject::ignoreEnter(){
@@ -2007,7 +1959,7 @@ bool GameObject::isFacingLeft(){
             {
                 uVar3 = 0;
             }
-            ret = SUB41(uVar3, 0);
+            ret = uVar3 > 0;
             if (objectRoation < 0xb3)
             {
                 ret = true;
@@ -2127,10 +2079,10 @@ GameObject* GameObject::objectFromVector(std::vector<std::string>& p0, std::vect
 //             sprite = (CCSprite *)m_colorSprite2;
 //         }
 //         pCVar3 = (sprite->getColor();
-//         uVar2 = (uint)(0.0 < (float)pCVar3) * (int)(float)pCVar3 & 0xff;
+//         uVar2 = (uint)(0.0 < pCVar3) * (int)pCVar3 & 0xff;
 //         if (uVar2 < 0xfa)
 //         {
-//             mode = (float)(longlong)(int)uVar2 * 0.004;
+//             mode = (int)uVar2 * 0.004;
 //             goto RETURNMODE;
 //         }
 //     }
@@ -2409,9 +2361,9 @@ void GameObject::selectObject(cocos2d::ccColor3B p0)
 //   float fVar2;
   
 //   if ((field290_0x47c != param_4) ||
-//      ((int)((uint)(param_3_00 < (float)field289_0x478) << 0x1f) < 0)) {
+//      ((int)((uint)(param_3_00 < field289_0x478) << 0x1f) < 0)) {
 //     bVar1 = m_opacity;
-//     fVar2 = param_2 * (float)(longlong)(int)(uint)bVar1;
+//     fVar2 = param_2 * (int)(uint)bVar1;
 //      setOpacity)(this,(uint)(0.0 < fVar2) * (int)fVar2 & 0xff);
 //     m_opacity = bVar1;
 //     field290_0x47c = param_4;
@@ -2428,7 +2380,7 @@ void GameObject::setChildColor(cocos2d::ccColor3B *color)
 {
     unsigned short colorMode;
 
-    if (m_colorSprite != (CCSprite *)0x0)
+    if (m_colorSprite != nullptr)
     {
         colorMode = (unsigned short)color->r;
         if (color->r == 0) {
@@ -2522,7 +2474,7 @@ void GameObject::setGlowOpacity(unsigned char opacity)
     float newOpacity;
 
     if (m_glow != nullptr) {
-        newOpacity = (float)(longlong)(int)(uint)opacity * this->m_glowOpacityMultiplier;
+        newOpacity = (int)(uint)opacity * m_glowOpacityMultiplier;
         _opacity = (int)(0.0 < newOpacity) * (int)newOpacity & 0xff;
         m_glow->setOpacity(_opacity);
         m_glow->setChildOpacity(_opacity);
@@ -2592,7 +2544,7 @@ void GameObject::setOrientedRectDirty(bool dirty)
 //             cocos2d::CCNode::convertToWorldSpace((CCNode *)&local_34, (CCPoint *)this);
         
 //             pcVar2 = (code *)m_particles->vtable->cocos2d_CCNode_setPosition;
-//             cocos2d::CCPoint::CCPoint(&CStack_2c, (position->x + (float)local_3c) - (float)local_34,
+//             cocos2d::CCPoint::CCPoint(&CStack_2c, (position->x + local_3c) - local_34,
 //                                       (position->y + local_38) - local_30);
 //             (*pcVar2)(m_particles, &CStack_2c);
 //         }
@@ -2721,7 +2673,7 @@ void GameObject::setRotationX(float rotation)
 
 
 
-void GameObject::setRotationY(float rotation)
+void GameObject::setRotationX(float rotation)
 {
     cocos2d::CCSprite *sprite;
 
@@ -2873,49 +2825,120 @@ void GameObject::update(float p0)
 
 
 
-/* Unknown Return: GameObject::updateBlendMode(){}; */
-
-
-/* Unknown Return: GameObject::updateCustomColorType(short p0){}; */
-
-void GameObject::updateCustomScaleX(float p0)
+void GameObject::updateBlendMode()
 {
-    return;
+    m_shouldBlendBaseColor = shouldBlendColor(m_baseColor,true);
+    if (m_colorSprite == nullptr) {
+        m_shouldBlendBaseColor = false;
+    }
+    else if (m_detailColor->getColorMode() != 0x3f4) {
+        m_shouldBlendDetailColor = shouldBlendColor(m_detailColor,false);
+    }
 }
 
 
-void GameObject::updateCustomScaleY(float p0)
+void GameObject::updateCustomColorType(short type)
+{ 
+    m_customColorType = type;
+    m_isDetailOnly = getRelativeSpriteColor(true) == nullptr;
+}   
+
+void GameObject::updateCustomScaleX(float x)
 {
-    return;
+    long _x = lroundf(x * 1000.0);
+    m_fScaleX = 0.0;
+    m_customScaleX = _x / 1000.0;
+    m_UnknownScaleX = _x / 1000.0;
+    setRScaleX(1);
+    m_textureRectDirty = true;
+    m_objectRectDirty = true;
+}
+
+void GameObject::updateCustomScaleY(float y)
+{
+    long _y = lroundf(y * 1000.0);
+    m_fScaleY = 0.0;
+    m_customScaleY = _y / 1000.0;
+    m_UnknownScaleY = _y / 1000.0;
+    setRScaleY(1);
+    m_textureRectDirty = true;
+    m_objectRectDirty = true;
 }
 
 
+void GameObject::updateHSVState()
+{
+    if (m_baseColor != nullptr) {
+        m_baseColor->m_usesHsv = !isHSVEqualTo(&m_baseColor->m_hsv);
+    }
+    if (m_detailColor != nullptr) {
+        m_detailColor->m_usesHsv = !isHSVEqualTo(&m_detailColor->m_hsv);
+    }
+}
 
-/* Unknown Return: GameObject::updateHSVState(){}; */
+void GameObject::updateIsOriented()
+{    
+    m_oriented = false;
+    if ((m_type != 7) && canRotateFree()) {
+        if ((getRotation() % 90) && (m_objectRadius <= 0.0)) {
+            calculateOrientedBox();
+        }
+    }
+}
+
+void GameObject::updateMainColor(const cocos2d::ccColor3B &color)
+{
+    setObjectColor(color);
+}
+
+void GameObject::updateMainColor()
+{
+    updateMainColor(colorForMode(m_colorMode,true));
+    updateMainOpacity();
+}
 
 
-/* Unknown Return: GameObject::updateIsOriented(){}; */
+void GameObject::updateMainColorOnly()
+{
+    if (((m_colorMode != 0) && (m_totalColors != 0)) && (m_opacityGroupSize != 0))  {
+        updateMainColor(colorForMode(m_colorMode,true));    
+    }
+}
+
+void GameObject::updateMainOpacity()
+{
+    m_baseColor->m_opacity = opacityModForMode(m_colorMode,true);
+}
 
 
-/* Unknown Return: GameObject::updateMainColor(){}; */
-
-
-/* Unknown Return: GameObject::updateMainColor(cocos2d::ccColor3B const& p0){}; */
-
-
-/* Unknown Return: GameObject::updateMainColorOnly(){}; */
-
-
-/* Unknown Return: GameObject::updateMainOpacity(){}; */
-
-
-/* Unknown Return: GameObject::updateMainParticleOpacity(unsigned char p0){}; */
+void GameObject::updateMainParticleOpacity(unsigned char opacity);
+{
+  return /* NOOP */;
+}
 
 void GameObject::updateObjectEditorColor()
 {
-    return;
-}
+    GameObject *child;
 
+    int mode = m_baseColor->getColorMode();
+    if (mode == m_baseColor->m_defaultColorID) {
+        mode = 0;
+    }
+    unsigned int color = editorColorForMode(mode);
+    setObjectColor(cocos2d::ccc3((color >> 16), (color >> 8) & 0xFF, (color & 0xFF)));
+    if (m_colorSprite != nullptr) {
+        m_baseColor = m_detailColor;
+        mode = m_baseColor->getColorMode();
+        if (mode == m_baseColor->m_defaultColorID) {
+            mode = 0;
+        }
+        color = editorColorForMode(mode);
+        updateSecondaryColor(cocos2d::ccc3((color >> 16), (color >> 8) & 0xFF, (color & 0xFF)));
+    }
+    if ((m_hasDetailFrame != false) && (child = reinterpret_cast<GameObject *>(getChildByTag(999)), child != nullptr)) {
+        // UNKNOWN VARAIBLE! child->getTexture(&DAT_0098ac40);
+    }
+}
 
 
 void GameObject::updateOrientedBox(){
@@ -2932,40 +2955,135 @@ void GameObject::updateOrientedBox(){
 }
 
 
-/* Unknown Return: GameObject::updateParticleColor(cocos2d::ccColor3B const& p0){}; */
+void GameObject::updateParticleColor(cocos2d::ccColor3B const &color)
+{
+    if (m_particles != nullptr) {
+        m_particles->setStartColor(cocos2d::ccc4f(color.r / 255.0, color.g / 255.0, color.b / 255.0, 1));
+        m_particles->setEndColor(cocos2d::ccc4f(color.r / 255.0, color.g / 255.0, color.b / 255.0, 0));
+    }
+}
+
+void GameObject::updateParticleOpacity(unsigned char opacity)
+{
+    if (m_particles != nullptr){
+        if ((opacity < 0x33) && (m_particles->isActive()))
+        {
+            m_particles->stopSystem();
+        } else if ((isVisible()) && (m_particles->isActive())){
+            m_particles->resumeSystem();
+        }
+    }
+}
+
+void GameObject::updateSecondaryColor() {
+    if ((hasSecondaryColor()) && ((m_previousObjectState != nullptr) || (m_groupCount != 0))){
+        updateSecondaryColor(colorForMode(m_previousObjectState, false));
+        updateSecondaryOpacity();
+    }
+}
+
+void GameObject::updateSecondaryColor(cocos2d::ccColor3B const& color){
+    setChildColor(color);
+}
 
 
-/* Unknown Return: GameObject::updateParticleOpacity(unsigned char p0){}; */
+
+void GameObject::updateSecondaryColorOnly()
+{
+    if ((hasSecondaryColor(this)) && ((m_previousObjectState != nullptr || (m_groupCount != 0))) )
+    {
+        updateSecondaryColor(colorForMode(m_previousObjectState, false));
+    }
+}
+
+void GameObject::updateSecondaryOpacity(){
+    m_detailColor->m_opacity = opacityModForMode(m_previousObjectState,false);
+}
+
+void GameObject::updateSecondaryParticleOpacity(unsigned char opacity)
+{
+    return /* NOOP */;
+}
 
 
-/* Unknown Return: GameObject::updateSecondaryColor(){}; */
+void GameObject::updateStartPos()
+{
+    cocos2d::CCPoint pos = getPosition();
+    startPosX = m_startPosition.x;
+    x = m_lastPositionX - startPosX;
+    pos.x = pos.x - x;
+    startPosY = m_startPosition.y;
+    y = m_lastPositionY - startPosY;
+    pos.y = pos.y - y;
+    if ((startPosX != pos.x) || (startPosY != pos.y)) {
+        m_objectRectDirty = true;
+        m_orientedBoxDirty = true;
+        m_textureRectDirty = true;
+        m_lastPositionX = pos.x + x;
+        m_lastPositionY = pos.y + y;
+        m_startPosition = pos;
+    }
+}
 
+void GameObject::updateStartValues(GameObject *this)
+{
+    updateStartPos();
+    m_defaultFlipX = isFlipX();
+    m_defaultFlipY = isFlipY(); 
+    float rotationX = getRotationX();
+    float rotationY =  getRotationY();
+    if (rotationX == rotationY){
+        if (m_UnknownRotation != 0.0)
+        {
+            rotation = roundf(rotationX - m_UnknownRotation);
+        }
+        m_defaultRotationX = rotationX;
+    }
+    else
+    {
+        m_defaultRotation = m_defaultRoation;
+        if ((m_UnknownRotation == 0.0) && (m_defaultRotation == 0.0))
+        {
+            m_defaultRotationX = rotationX;
+            m_defaultRotationY = rotationY;
+            goto EXIT;
+        }
+        rotationX = roundf(rotationX - m_UnknownRotation);
+        m_defaultRotationX = rotation;
+        rotationY = roundf(rotationY - m_defaultRotation);
+    }
+    m_defaultRotationY = rotationY;
+EXIT:
+    m_defaultScaleX = m_customScaleX - m_scaleXInc;
+    m_defaultScaleY = m_customScaleY - m_scaleYInc;
+}
 
-/* Unknown Return: GameObject::updateSecondaryColor(cocos2d::ccColor3B const& p0){}; */
+void GameObject::updateTextKerning(int kerning)
+{
+    return /* NOOP */;
+}
 
+void GameObject::updateUnmodifiedPositions()
+{
+    if (m_unmodifiedPositionsDirty != false) {
+        m_unmodifiedPositionsDirty = false;
+        m_unmodifiedPositionX = (m_lastPositionX - m_currentPositionX );
+        m_unmodifiedPositionY = (m_lastPositionY - m_currentPositionY );
+    }
+}
 
-/* Unknown Return: GameObject::updateSecondaryColorOnly(){}; */
-
-
-/* Unknown Return: GameObject::updateSecondaryOpacity(){}; */
-
-
-/* Unknown Return: GameObject::updateSecondaryParticleOpacity(unsigned char p0){}; */
-
-
-/* Unknown Return: GameObject::updateStartPos(){}; */
-
-
-/* Unknown Return: GameObject::updateStartValues(){}; */
-
-
-/* Unknown Return: GameObject::updateTextKerning(int p0){}; */
-
-
-/* Unknown Return: GameObject::updateUnmodifiedPositions(){}; */
-
-
+/* TODO */
 /* Unknown Return: GameObject::usesFreezeAnimation(){}; */
 
 
-/* Unknown Return: GameObject::usesSpecialAnimation(){}; */
+bool GameObject::usesSpecialAnimation()
+{
+    if (m_objectID < 1843) {
+        if (((m_objectID < 1839) && (m_objectID != 1591)) && (m_objectID != 0x639)) {
+            return false;
+        }
+    } else if ((m_objectID - 2892) > 1) {
+        return false;
+    }
+    return true;
+}
