@@ -2721,7 +2721,7 @@ void GameObject::setRotationX(float rotation)
 
 
 
-void GameObject::setRotationX(float rotation)
+void GameObject::setRotationY(float rotation)
 {
     cocos2d::CCSprite *sprite;
 
