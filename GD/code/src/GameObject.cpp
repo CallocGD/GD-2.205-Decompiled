@@ -1,6 +1,7 @@
 #include "includes.h"
 #include "GameObject.h"
-
+#include <CCNode.h>
+#include "OBB2D.h"
 
 
 
@@ -80,7 +81,7 @@ cocos2d::CCSprite * GameObject::addCustomColorChild(std::string customColor)
 }
 
 
-void __thiscall GameObject::addEmptyGlow()
+void GameObject::addEmptyGlow()
 {
     createGlow("emptyGlow.png");
     if (m_glow != nullptr) m_glow->setDontDraw(true);
@@ -183,40 +184,41 @@ void GameObject::addRotation(float p0)
 }
 
 
-void __thiscall GameObject::addToColorGroup(int color)
+void GameObject::addToColorGroup(int color)
 {
-    if ((m_colorGroupCount < 10) && ((color - 1) < 9999)) {
+    if ((m_totalColors < 10) && ((color - 1) < 9999)) {
         createColorGroupContainer(10);
-        for (int i = 0; i < m_colorGroupCount; i++){
-            if (m_colorGroupContainer->operator[](i) == color) 
+        for (int i = 0; i < m_totalColors; i++){
+            if ((*m_colorArray)[i] == color) 
                 break;
         }
-        m_colorGroupCount++;
+        m_totalColors++;
     }
 }
 
-void __thiscall GameObject::addToCustomScaleX(float scaleX)
+void GameObject::addToCustomScaleX(float scaleX)
 {
-    // field_0x2bc = true; Unknown
+    m_textureRectDirty = true;
     m_objectRectDirty = true;
-    m_realXPosition += scaleX;
-    m_scaleX += scaleX;
+    m_scaleXInc = m_scaleXInc + scaleX;
+    m_customScaleX = m_customScaleX + scaleX;
+    return;
 }
 
 
 void GameObject::addToCustomScaleY(float scaleY)
 {
-    // field_0x2bc = true; Unknown
+    m_textureRectDirty = true;
     m_objectRectDirty = true;
-    m_realYPosition += scaleY;
-    m_scaleY += scaleY;
+    m_scaleYInc = m_scaleYInc + scaleY;
+    m_customScaleY = m_customScaleY + scaleY;
 }
 
 
 
 int GameObject::addToGroup(int groupNumber)
 {
-    if ((this->m_groupsCount < 10) && (groupNumber - 1 < 9999)) {
+    if ((m_groupsCount < 10) && (groupNumber - 1 < 9999)) {
         createGroupContainer(10);
         int i = 0;
         while (true) {
@@ -234,7 +236,7 @@ int GameObject::addToGroup(int groupNumber)
 }
 
 
-void __thiscall GameObject::addToOpacityGroup(int _opacity)
+void GameObject::addToOpacityGroup(int _opacity)
 {
 
     if ((m_opacityGroupCount < 10) && (_opacity - 1 < 9999)) {
@@ -267,9 +269,9 @@ void GameObject::animationTriggered()
 static int GLOBAL_MID;
 
 void GameObject::assignUniqueID(){
-    this->m_unqiueID = GLOBAL_MID;
+    m_unqiueID = GLOBAL_MID;
     //  what is this bullshit ;-; 
-    //  *(int *)((int)&this->sub + 0x30) = GLOBAL_MID;
+    //  *(int *)((int)&sub + 0x30) = GLOBAL_MID;
     // Maybe it's this?
     setTag(GLOBAL_MID);
     GLOBAL_MID++;
@@ -363,12 +365,12 @@ void GameObject::copyGroups(GameObject *object)
 /* TODO: There's some objects I have not Reversed yet in this one... */
 /* Unknown Return: GameObject::createAndAddParticle(int p0, char const* p1, int p2, cocos2d::tCCPositionType p3){}; */
 
-void __thiscall GameObject::createColorGroupContainer(int group)
+void GameObject::createColorGroupContainer(int group)
 {
-    if (m_colorGroupContainer) {
-        m_colorGroupContainer = new std::array<short, 10>;
+    if (m_colorArray) {
+        m_colorArray = new std::array<short, 10>;
         for (int i; i < group; i++){
-            m_colorGroupContainer->operator[](i) = 0;
+            m_colorArray->operator[](i) = 0;
         }
     }
 }
@@ -451,15 +453,15 @@ void GameObject::deactivateObject(bool p0)
 
 void GameObject::deselectObject()
 {
-    this->m_isSelected = false;
+    m_isSelected = false;
     updateObjectEditorColor();
 }
 
 /* 2 Unknown Class variables */
 void GameObject::destroyObject()
 {
-//   this->field_0x33a = 1;
-//   this->field_0x292 = 1;
+//   field_0x33a = 1;
+//   field_0x292 = 1;
     setOpacity(0);
 }
 
@@ -471,19 +473,19 @@ void GameObject::destroyObject()
 
 bool GameObject::didScaleXChange()
 {
-    return (this->m_scaleX * 10000.0) - (this->m_currentScaleX * 10000.0) != 0;
+    return (m_scaleX * 10000.0) - (m_currentScaleX * 10000.0) != 0;
 }
 
 bool GameObject::didScaleYChange()
 {
-    return (this->m_scaleY * 10000.0) - (this->m_currentScaleY * 10000.0) != 0;
+    return (m_scaleY * 10000.0) - (m_currentScaleY * 10000.0) != 0;
 }
 
 // 2 Unknown Class Members
-// void __thiscall GameObject::dirtifyObjectPos(GameObject *this)
+// void GameObject::dirtifyObjectPos()
 // {
-//   this->field133_0x2bd = true;
-//   this->field134_0x2be = true;
+//   field133_0x2bd = true;
+//   field134_0x2be = true;
 // }
 
 
@@ -502,11 +504,11 @@ void GameObject::disableObject() {
 
 bool GameObject::dontCountTowardsLimit()
 {
-    return this->m_objectID == 0x1f;
+    return m_objectID == 0x1f;
 }
 
 
-void __thiscall GameObject::duplicateAttributes(GameObject *object)
+void GameObject::duplicateAttributes(GameObject *object)
 {
     m_zOrder = object->getObjectZOrder();
     setCustomZLayer(object->getObjectZLayer());
@@ -523,7 +525,7 @@ void __thiscall GameObject::duplicateAttributes(GameObject *object)
     m_hasNoGlow = object->m_hasNoGlow;
     m_isHide = object->m_isHide;
     m_isNonStickX = object->m_isNonStickX;
-    m_isNonStickY = object->m_isNonStickY;
+    m_isDontBoostY = object->m_isNonStickY;
     m_isDontBoostY = object->m_isDontBoostY;
     m_isExtraSticky = object->m_isExtraSticky;
     m_isScaleStick = object->m_isScaleStick;
@@ -539,7 +541,7 @@ void __thiscall GameObject::duplicateAttributes(GameObject *object)
 void GameObject::duplicateValues(GameObject *object)
 {
     if (getRotationX() == getRotationY()) {
-        this->setRotation(object->getRotation());
+        setRotation(object->getRotation());
     }
     else {
         setRotationX(getRotationX());
@@ -548,11 +550,11 @@ void GameObject::duplicateValues(GameObject *object)
     setFlipX(object->isFlipX());
     setFlipY(object->isFlipY());
     duplicateColorMode(object);
-    this->m_zOrder = object->m_zOrder;
+    m_zOrder = object->m_zOrder;
     setCustomZLayer(object->getCustomZLayer());
-    this->m_isDontFade = object->m_isDontFade;
-    this->m_isDontEnter = object->m_isDontEnter;
-    this->m_hasNoEffects = object->m_hasNoEffects;
+    m_isDontFade = object->m_isDontFade;
+    m_isDontEnter = object->m_isDontEnter;
+    m_hasNoEffects = object->m_hasNoEffects;
 
     for (int i = 0; i < object->m_groupsCount; i++) {
         addToGroup(object->getGroupID(i));
@@ -604,8 +606,10 @@ const char * GameObject::getBallFrame(int _ID){
 /* Unknown Return: GameObject::getBoundingRect(){}; */
 
 
-/* complexity: 7, Reason: Unknown Class Members, Lines: 41 */
-/* Unknown Return: GameObject::getBoxOffset(){}; */
+
+cocos2d::CCPoint GameObject::getBoxOffset(){
+
+}; 
 
 /* complexity: 3, Reason: Unknown Function with Unknown std functions , Lines: 23 */
 /* Unknown Return: GameObject::getColorFrame(std::string p0){}; */
@@ -647,8 +651,8 @@ int GameObject::getCustomZLayer()
 
 /* Unknown Return Type */
 /* 
-undefined __thiscall GameObject::getGroupDisabled(GameObject *this)
-  return this->m_groupDisabled;
+undefined GameObject::getGroupDisabled()
+  return m_groupDisabled;
 }
 */
 
@@ -666,8 +670,27 @@ int GameObject::getGroupID(int groupID){
 };
 
 
-/* I will do this one later... - Calloc */
-/* Unknown Return: GameObject::getGroupString(){}; */
+
+std::string GameObject::getGroupString(){
+    fmt::Writer writer; 
+    bool toggle = true;
+    unsigned int i = 0;
+
+    /* Not sure why robtop would do this a total of 20 times if there's only up to 10 possible groups :/ */
+    for (unsigned int i = 0; i != 20; i += 2){
+        auto value = (*m_groupContainer)[i];
+        if (value > 0) {
+            if (!toggle){ 
+                writer << ".";
+            }
+            writer << value;
+            toggle = false;
+        }
+    }
+    std::string data = writer.str();
+    writer.Clear();
+    return data;
+}
 
 
 bool GameObject::getHasRotateAction()
@@ -684,13 +707,13 @@ bool GameObject::getHasSyncedAnimation()
 
 cocos2d::CCPoint GameObject::getLastPosition()
 {
-    return m_lastPosition;
+    return CCPointMake(m_lastPositionX, m_lastPositionY);
 }
 
 
 GJSpriteColor * GameObject::getMainColor()
 {
-    return m_mainColor;
+    return m_baseColor;
 }
 
 
@@ -703,7 +726,7 @@ int GameObject::getMainColorMode(){
 
 int GameObject::getObjectDirection(){
     determineSlopeDirection();
-    int slope = static_cast<int>(this->m_slopeDirection - 2);
+    int slope = m_slopeType - 2;
     if (5 <  slope) {
         return 4;
     }
@@ -735,25 +758,39 @@ int GameObject::getObjectLabel()
 
 float GameObject::getObjectRadius()
 {
-    if ((m_scaleX != 1.0) || (m_scaleY != 1.0)) {
-        if (-1 < (m_scaleX < m_scaleY) << 0x1f){
-            m_scaleY = m_scaleX;
+    if ((m_customScaleX != 1.0) || (m_customScaleX != 1.0)) {
+        if (-1 < ((m_customScaleX < m_customScaleY) << 0x1f)) {
+          m_customScaleY = m_customScaleX;
         }
-        m_objectRadius *= m_scaleY;
+        m_objectRadius = m_objectRadius * m_customScaleY;
     }
     return m_objectRadius;
 }
 
-
-cocos2d::CCRect const& GameObject::getObjectRect()
+cocos2d::CCRect GameObject::getObjectRect()
 {
-    return;
+    return getObjectRect2(m_OBB2DWidth, m_OBB2DHeight);
 }
 
 
-/* complexity: 5  Reason: Too Many Unknown Class members,  Lines: 48 */
 cocos2d::CCRect GameObject::getObjectRect(float width, float height)
 {
+    if (m_isOrientedRectDirty) {
+        m_customScaleX = abs(m_customScaleX);
+        m_customScaleY = abs(m_customScaleY);
+    }
+
+    cocos2d::CCSize size = CCSizeMake(m_spriteSizeWidth * m_customScaleX, m_spriteSizeHeight * m_customScaleY);
+    size.width *= width;
+    size.height *= height;
+    cocos2d::CCPoint boxOffset = getBoxOffset();
+    m_customScaleX = size.height;
+    if (m_objectRectCanRotate) {
+        size.height = size.width;
+        size.width = m_customScaleX;
+    }
+    cocos2d::CCPoint offset = getRealPosition() + boxOffset;
+    return CCRectMake(offset.y - size.width * 0.5, offset.x - size.height * 0.5, size.width, size.height);
 }
 
 
@@ -761,9 +798,9 @@ cocos2d::CCRect GameObject::getObjectRect2(float width,float height)
 {
     if (m_objectRectDirty) {
         m_objectRectDirty = false;
-        m_objectRect2 = (m_boxCalculated) ? getOuterObjectRect(): getObjectRect(width, height);
+        m_transferedObjectRect = (m_oriented) ? getOuterObjectRect(): getObjectRect(width, height);
     }
-    return m_objectRect2;
+    return m_transferedObjectRect;
 }
 
 
@@ -772,197 +809,1237 @@ bool GameObject::getObjectRectDirty()
     return m_objectRectDirty;
 }
 
-cocos2d::CCRect* GameObject::getObjectRectPointer()
+cocos2d::CCRect& GameObject::getObjectRectPointer()
 {
-    if (m_objectRectDirty != false) {
-        m_objectRect2 = getObjectRect();
+    if (m_objectRectDirty) {
+        getObjectRect();
     }
-    return &m_objectRect2;
+    return m_transferedObjectRect;
 }
 
 double GameObject::getObjectRotation(){
-    return m_rotationDelta + m_rotationX;
+    m_defaultRotationX + m_UnkownRotation;
 };
 
 /* complexity: 10 , Reason: Unknown Memebers and Unknown vtable Calls Otherwise Ask Robtop, Lines of Code: 86 */
-/* Unknown Return: GameObject::getObjectTextureRect(){}; */
+cocos2d::CCRect GameObject::getObjectTextureRect(){
+    cocos2d::CCSize size;
+    float height;
+    if (m_textureRectDirty == false) {
+        if (m_objectPosXDirty) {
+            m_objectPosXDirty = false;
+            m_objectTextureRect.origin.x =  m_lastPositionX - (m_objectTextureRect.size.width * 0.5);
+            m_objectTextureRect.origin.y = m_lastPositionY - (m_objectTextureRect.size.height * 0.5);
+        }
+    }
+    else {
+        m_textureRectDirty = false;
+        m_objectPosXDirty = false;
+        if (m_updateCustomContentSize == false) {
+            if (m_hasContentSize == false) {
+                size = m_size = getContentSize();
+            }
+            else {
+                size = m_size;
+            }
+            
+            if (m_customScaleX != 1.0) {
+                size.width = size.width * abs(m_customScaleX);
+            }
+            height = size.width;
+            if (m_customScaleY != 1.0) {
+              size.height = size.height * abs(m_customScaleY);
+            }
+            if (m_objectRectCanRotate == false) {
+                height = getRotationX();
+                if ((height != 0.0) && (abs(height) != 180.0)) {
+                    size.width = sqrtf(size.height * size.height + size.width * size.width);
+                    size.height = size.width;
+                }
+            }
+            else {
+              size.width = size.height;
+              size.height = height;
+            }
+            m_objectTextureRect.size.width = size.width;
+            height = size.width * 0.5;
+            m_objectTextureRect.size.height = size.height;
+            m_objectTextureRect.origin.x = (m_lastPositionX - height);
+            m_objectTextureRect.origin.y = (m_lastPositionY - (size.height * 0.5));
+            if (size.width != 30.0 && size.width < 30.0 == size.width) {
+                height = height - 15.0;
+            }
+            if (size.width != 30.0 && size.width < 30.0 == size.width) {
+                m_objectTextureRectHeight = height;
+            }
+        } else {
+            m_objectRectDirty = true;
+            m_objectTextureRect = getObjectRect();
+        }
+    }
+  
+    return m_objectTextureRect;
+  
+}; 
 
 
 int GameObject::getObjectZLayer()
 {
-    return (m_customZLayer) ? m_customZLayer : m_unkZLayer;
+    return (m_customZLayer) ? m_customZLayer : m_defaultZLayer;
 }
 
 int GameObject::getObjectZOrder()
 {
-    return (m_zOrder) ? m_zOrder :  m_unkZOrder;
+    return (m_zOrder) ? m_zOrder :  m_defaultZOrder;
 }
 
 
-/* Unknown Return: GameObject::getOrientedBox(){}; */
+OBB2D * GameObject::getOrientedBox()
+{
+    if ((m_OBB2D == nullptr) || (m_orientedRectDirty)) {
+        calculateOrientedBox();
+    }
+    return m_OBB2D;
+}
+
+bool GameObject::getOrientedRectDirty(){
+    return m_orientedRectDirty;
+}
 
 
-/* Unknown Return: GameObject::getOrientedRectDirty(){}; */
+cocos2d::CCRect GameObject::getOuterObjectRect()
+{
+    if (m_orientedRectDirty) {
+        updateOrientedBox();
+    }
+    return (m_OBB2D->getBoundingRect());
+}
+
+/* TODO: There should be switches when there isn't... */
+int GameObject::getParentMode(){
+
+};
 
 
-/* Unknown Return: GameObject::getOuterObjectRect(){}; */
+float GameObject::getRScaleX()
+{ 
+    return getScaleX();
+}
 
 
-/* Unknown Return: GameObject::getParentMode(){}; */
+float GameObject::getRScaleY()
+{ 
+    return getScaleY();
+}
 
-
-/* Unknown Return: GameObject::getRScaleX(){}; */
-
-
-/* Unknown Return: GameObject::getRScaleY(){}; */
 
 cocos2d::CCPoint GameObject::getRealPosition()
 {
-    return;
+  return CCPointMake(m_lastPositionX, m_lastPositionY);
+}
+
+GJSpriteColor* GameObject::getRelativeSpriteColor(int ID)
+{
+    bool isColorObj = isColorObject();
+    if ((ID == 2) || (!isColorObj)) {
+        return m_detailColor;
+    }
+    else if (isColorObj) {
+        return nullptr;
+    }
+    return m_baseColor;
+}
+
+/* UNKNOWN VALUES MAYBE ITS ZERO? */
+
+static cocos2d::ccHSVValue ccHSVValueZERO = cocos2d::cchsv(0.0, 0.0, 0.0, false, false);
+
+
+/* Ghidra had this */
+// static float DAT_00aa4c04;
+// static float DAT_00aa4c08;
+// static float DAT_00aa4c0c;
+// bool isHSVEqualTo(cocos2d::_ccHSVValue *hsv){
+//     short sVar1;
+//     if (((hsv->h == DAT_00aa4c04) && (hsv->s == DAT_00aa4c08)) && (hsv->v == DAT_00aa4c0c)) {
+//         sVar1._0_1_ = hsv->absoluteSaturation;
+//         sVar1._1_1_ = hsv->absoluteBrightness;
+//         return sVar1 == _DAT_00aa4c10;
+//     }
+//     return false;
+// }
+
+/* What I think it's referring to... */
+
+bool isHSVEqualTo(cocos2d::_ccHSVValue hsv){
+    return hsv.h == ccHSVValueZERO.h && 
+        hsv.s == ccHSVValueZERO.s && 
+        hsv.v == ccHSVValueZERO.v && 
+        hsv.absoluteBrightness == ccHSVValueZERO.absoluteBrightness && 
+        hsv.absoluteSaturation == ccHSVValueZERO.absoluteSaturation;
+}
+
+
+// Would Recommend reading https://wyliemaster.github.io/gddocs/#/resources/client/level-components/level-object if you don't understand what this is doing...
+
+std::string GameObject::getSaveString(GJBaseGameLayer* base)
+{
+    fmt::Writer writer = fmt::BasicWriter<char>();
+
+    /* My goal with this function is to try and not confuse you, I can reformat this later if compiling does not match */
+
+    writer << 1 << "," << m_objectID;
+    writer << "," << 2 << "," << (getPosition().x);
+    writer << "," << 3 << "," << (getPosition().y - 90.0);
+
+    if (m_disableGlow) {
+        writer << "," << 96 << "," << 1;
+    }
+    
+    if (m_isPassable) {
+        writer << "," << 134 << "," << m_isPassable;
+    }
+
+    if (m_hasExtendedCollision) {
+        writer << "," << 511 << "," << m_hasExtendedCollision);
+    }
+    
+    if (m_isNonStickX) {
+        writer << "," << 136 << "," << m_isNonStickX);
+    }
+
+    if (m_isNonStickY) {
+        writer << "," << 289 << "," << m_isNonStickY;
+    }
+    
+    if (m_isExtraSticky) {
+        writer << "," << 495 << "," << m_isExtraSticky;
+    }
+    
+    if (m_dontBoost) {
+        writer << "," << 496 << "," << m_dontBoost;
+    }
+    
+    if (m_dontBoostX) {
+        writer << "," << 509 << "," << m_dontBoostX;
+    }
+    
+    if (m_applyScaleStick) {
+        writer << "," << 356 << "," << m_applyScaleStick;
+    }
+
+    if (m_hasNoAudioScale) {
+        writer << "," << 372 << "," << m_hasNoAudioScale;
+    }
+
+    if (m_customColorType != 0) {
+        writer << "," << 497 << "," << m_customColorType;
+    }
+
+    if (m_iceBlock) {
+        writer << "," << 137 << "," << m_iceBlock;
+    }
+
+    if (m_isGripSlope) {
+        writer << "," << 193 << "," << m_isGripSlope;
+    }
+
+    if (m_isNoTouch) {
+        writer << "," << 121 << "," << m_isNoTouch;
+    }
+
+    if (m_enterChannel != 0) {
+        writer << "," << 343 << "," << m_enterChannel;
+    }
+
+    if (m_objectMaterial != 0) {
+        writer << "," << 446 << "," << m_objectMaterial;
+    }
+  
+    if (isFlipX()) {
+        writer << "," << 4 << "," << 1;
+    }
+    
+    if (isFlipY()) {
+        writer << "," << 5 << "," << 1;
+    }
+    if (0 < m_linkedGroup) {
+        writer << "," << 108 << "," << m_linkedGroup;
+    }
+
+    if (m_editorLayer != 0) {
+        writer << "," << 20 << "," << m_editorLayer;
+    }
+
+    if (m_editorLayer2 != 0) {
+        writer << "," << 61 << "," << m_editorLayer2;
+    }
+
+    if (m_isHighDetail) {
+        writer << "," << 103 << "," << m_isHighDetail;
+    }
+
+    if (m_groupCount > 0) {
+        writer << "," << 0x39 << "," << getGroupString();
+    }
+    if ((m_hasGroupParentsString) && (base != nullptr)) {
+        std::string parentStr = base->getGroupParentsString(this);
+        if (parentStr.size() != 0) {
+            writer << "," << 274 << ","  << parentStr;
+        }
+    }
+
+    if (m_isDontFade) {
+        writer << "," << 64 << "," << 1;
+    }
+
+    if (m_isDontEnter) {
+        writer << "," << 67 << "," << 1;
+    }
+
+    if (m_hideEffects) {
+        writer << "," << 116 << "," << m_hideEffects;
+    }
+
+    if (m_hasNoParticles) {
+        writer << "," << 507 << "," << m_hasNoParticles;
+    }
+
+    /* We have yet to hand m_property155, m_property156, m_property53 real names */
+    if (0 < m_property155) {
+        writer << "," << 155 << "," << m_property155;
+    }
+
+    if (0 < m_property156) {
+        writer << "," << 156 << "," << m_property156;
+    }
+
+    if (m_property53 != 0) {
+        writer << "," << 53 << "," << m_property53;
+    }
+    if (m_zOrder != 0) {
+        writer << "," << 0x19 << "," << m_zOrder;
+    }
+
+    /* Rotation Variables... */
+
+    float rY = getRotationX();
+    float rX = getRotationY();
+    rY = rY - (rY / 360.0) * 360;
+    rX = rX - (rX / 360.0) * 360;
+    if (rY != rY) {
+        rY = (rY * 100.0 + 0.5) / 100.0;
+    }
+    if (rX != rX) {
+        rX = (rX * 100.0 + 0.5) / 100.0;
+    }
+    if (rY == rX) {
+        if (rY == 0.0) goto SKIP_131;
+        writer << "," << 6 << ",";
+    }
+    else {
+        writer << "," << 131 << "," << rY << "," << 132 << ",";
+    }
+    writer << rX;
+
+    SKIP_131:
+    if (m_baseColor->m_colorID != 0) {
+        writer << "," << 21 << "," << m_baseColor->m_colorID;
+    }
+
+    if ((m_detailColor != nullptr) && (m_detailColor->m_colorID != 0)) {
+        writer << "," << 22 << "," << m_detailColor->m_colorID;
+    }
+
+    if (m_customZLayer != 0) {
+        writer << "," << 24 << "," << m_customZLayer;
+    }
+
+    if (m_customScaleX != 1.0) {
+        writer << "," << 128 << "," << m_customScaleX;
+    }
+
+    if (m_customScaleY != 1.0) {
+        writer << "," << 129 << "," << m_customScaleY;
+    }
+
+    if (m_toggleGroupParent) {
+        writer << "," << 34 << "," << m_toggleGroupParent;
+    }
+    
+    if (m_toggleAreaParent) {
+        writer << "," << 279 << "," << m_toggleAreaParent;
+    }
+
+    /* Not sure how GameToolbox::stringFromHSV is supposed to work because In Ghidra it shows up very weirdly... */
+    if (!isHSVEqualTo(m_baseColor->m_hsv)) {
+        writer << "," << 41 << "," << 1 << "," << 43 << "," << GameToolbox::stringFromHSV(m_basecolor->m_hsv, "\x92");
+    }
+
+
+    if ((m_detailColor != nullptr) && (!isHSVEqualTo(m_detailColor->m_hsv))) {
+        writer << "," << 42 << "," << 1 << "," << 44 << "," <<  GameToolbox::stringFromHSV(m_basecolor->m_hsv, "\x92");
+    }
+    
+    std::string saveString = writer.c_str();
+    writer.Clear();
+    return saveString;
 }
 
 
 
-/* Unknown Return: GameObject::getRelativeSpriteColor(int p0){}; */
+cocos2d::CCPoint GameObject::getScalePosDelta()
+{
+    cocos2d::CCPoint pos = cocos2d::CCPointZero;
+    cocos2d::CCRect objRect = getObjectRect();
+    
+    float height = objRect.size.height;
 
-// std::string GameObject::getSaveString(GJBaseGameLayer* p0)
-// {
-//     return;
-// }
+    if (m_objectRectCanRotate) {
+        objRect.size.height = objRect.size.width;
+        objRect.size.width = height;
+    }
 
+    if (didScaleXChange()) {
+        pos.x = (objRect.size.width - (objRect.size.width / m_customScaleX) * m_UnknownScaleX) * 0.5;
+    }
 
+    if (didScaleYChange()) {
+        pos.y = (objRect.size.height - (objRect.size.height / m_customScaleY) * m_UnknownScaleY) * 0.5;
+    }
 
-/* Unknown Return: GameObject::getScalePosDelta(){}; */
+    if (m_objectRectCanRotate) {
+        /* flip pos.y and pos.x around... */
+        height = pos.y;
+        pos.y = pos.x;
+        pos.x = height;
+    }
 
-
-/* Unknown Return: GameObject::getSecondaryColor(){}; */
-
-
-/* Unknown Return: GameObject::getSecondaryColorMode(){}; */
-
-
-/* Unknown Return: GameObject::getSlopeAngle(){}; */
-
-
-/* Unknown Return: GameObject::getStartPos(){}; */
-
-
-/* Unknown Return: GameObject::getTextKerning(){}; */
-
-
-/* Unknown Return: GameObject::getType(){}; */
-
-
-/* Unknown Return: GameObject::getUnmodifiedPosition(){}; */
+    return pos;
+}
 
 
-/* Unknown Return: GameObject::groupColor(cocos2d::ccColor3B const& p0, bool p1){}; */
+
+GJSpriteColor* GameObject::getSecondaryColor()
+{
+    return m_detailColor;
+}
+
+int GameObject::getSecondaryColorMode()
+{
+    GJSpriteColor *secondaryColor = getSecondaryColor();
+    return (secondaryColor != nullptr) ? secondaryColor->getColorMode() : 0;
+}
+
+float GameObject::getSlopeAngle(){
+    cocos2d::CCRect rect = getObjectRect();
+    return atanf(rect.size.height / rect.size.width);
+}
+
+cocos2d::CCPoint GameObject::getStartPos(){
+    return m_startPosition;
+};
 
 
-/* Unknown Return: GameObject::groupOpacityMod(){}; */
+int GameObject::getTextKerning(){
+    return 0;
+};
 
 
-/* Unknown Return: GameObject::groupWasDisabled(){}; */
+int GameObject::getType()
+{
+    return m_type;
+}
 
 
-/* Unknown Return: GameObject::groupWasEnabled(){}; */
+cocos2d::CCPoint GameObject::getUnmodifiedPosition(){
+    return CCPointMake(
+        m_lastPositionX - (double)m_currentPositionX, 
+        m_lastPositionY - (double)m_currentPositionY
+    )
+};
+
+/* TODO: GJEffectManager */
+cocos2d::ccColor3B GameObject::groupColor(cocos2d::ccColor3B color, int ID, bool isDetail)
+{
+    m_color.r = color->r;
+    m_color.g = color->g;
+    m_color.b = color->b;
+    for (int i = 0; i < m_totalColors; i = i + 1) {
+        int color = m_effectManager->colorForGroupID(ID, m_color, isDetail);
+        m_color.r = color & 0xFF;
+        m_color.g = (color >> 8) & 0xFF;
+        m_color.b = (color >> 0x10) & 0xFF;
+    }
+    return m_color;
+}
 
 
-/* Unknown Return: GameObject::hasBeenActivated(){}; */
+
+float GameObject::groupOpacityMod()
+{
+    int size = 0;
+    float opacityMod = 1.0;
+    while( true ) {
+        if (m_opacityGroupSize <= size) {
+            return opacityMod;
+        }
+        opacityMod *= m_effectManager->opacityModForGroup((*m_opacityMod)[size]);
+        if (opacityMod <= 0.0) 
+            break;
+        size++;
+    }
+    return 0.0;
+}
 
 
-/* Unknown Return: GameObject::hasBeenActivatedByPlayer(PlayerObject* p0){}; */
+
+void GameObject::groupWasDisabled()
+{
+    m_numOfGroups -= 1;
+    m_groupDisabled = m_numOfGroups >> 0x1f;
+}
+
+void GameObject::groupWasEnabled(){
+    m_numOfGroups += 1;
+    m_groupDisabled = m_numOfGroups >> 0x1f;
+};
 
 
-/* Unknown Return: GameObject::hasSecondaryColor(){}; */
+bool GameObject::hasBeenActivated(){
+    return false;
+};
+
+
+bool GameObject::hasBeenActivatedByPlayer(PlayerObject *player)
+{
+    return false;
+}
+
+bool GameObject::hasSecondaryColor()
+{
+    return m_colorSprite != nullptr;
+}
+
+/* TODO: Optimize "ignoreEditorDuration" into a Switch Block... */
 
 bool GameObject::ignoreEditorDuration()
 {
-    return;
+    int ID;
+    int m_objectID;
+    uint ID2;
+    bool is7e0;
+    bool i;
+  
+    if (m_type == 0x1e) {
+        return true;
+    }
+    m_objectID = m_objectID;
+    if (0x71b < m_objectID) {
+    if (m_objectID < 0xb6f) {
+      if (0xb6c < m_objectID) {
+        return true;
+      }
+      if (m_objectID < 0x811) {
+        if (0x80d < m_objectID) {
+          return true;
+        }
+        if (m_objectID == 0x77b) {
+          return true;
+        }
+        if (m_objectID < 0x77c) {
+          if (m_objectID == 0x743) {
+            return true;
+          }
+          if (m_objectID == 0x778) {
+            return true;
+          }
+          ID = 0x725;
+        }
+        else {
+          if (0x78f < m_objectID) {
+            is7e0 = m_objectID == 0x7e0;
+            goto LAB_0035aa14;
+          }
+          if (0x78a < m_objectID) {
+            return true;
+          }
+          ID = 0x77d;
+        }
+      }
+      else if (m_objectID < 0xb55) {
+        if (0xb52 < m_objectID) {
+          return true;
+        }
+        if (m_objectID < 0x816) {
+          if (0x813 < m_objectID) {
+            return true;
+          }
+          ID = 0x812;
+        }
+        else {
+          ID = 0xb32;
+        }
+      }
+      else {
+        if (m_objectID < 0xb56) {
+          return false;
+        }
+        if (m_objectID < 0xb5a) {
+          return true;
+        }
+        ID = 0xb5b;
+      }
+    }
+    else if (m_objectID < 0xe1a) {
+      if (0xe15 < m_objectID) {
+        return true;
+      }
+      if (m_objectID == 0xbd3) {
+        return true;
+      }
+      if (m_objectID < 0xbd4) {
+        if (m_objectID < 0xbbc) {
+          return false;
+        }
+        if (m_objectID < 0xbc3) {
+          return true;
+        }
+        i = 7 < m_objectID - 0xbc8U;
+        is7e0 = m_objectID - 0xbc8U == 8;
+        goto LAB_0035aaba;
+      }
+      if (m_objectID == 0xe10) {
+        return true;
+      }
+      if (m_objectID < 0xe11) {
+        i = 3 < m_objectID - 0xbd5U;
+        is7e0 = m_objectID - 0xbd5U == 4;
+        goto LAB_0035aaba;
+      }
+      ID = 0xe14;
+    }
+    else {
+      if (m_objectID < 0xe3c) {
+        if (0xe37 < m_objectID) {
+          return true;
+        }
+        if (m_objectID < 0xe1c) {
+          return false;
+        }
+        if (m_objectID < 0xe20) {
+          return true;
+        }
+        ID = -0xe21;
+        goto LAB_0035aaa0;
+      }
+      if (m_objectID == 0xe47) {
+        return true;
+      }
+      if (0xe47 < m_objectID) {
+        ID2 = m_objectID - 0xe4c;
+        goto LAB_0035aab8;
+      }
+      ID = 0xe3d;
+    }
+LAB_0035aa12:
+    is7e0 = m_objectID == ID;
+LAB_0035aa14:
+    if (!is7e0) {
+      return false;
+    }
+    return true;
+  }
+  if (0x716 < m_objectID) {
+    return true;
+  }
+  if (m_objectID < 0x120) {
+    if (0x11d < m_objectID) {
+      return true;
+    }
+    if (0x3b < m_objectID) {
+      if (m_objectID == 0x6f) {
+        return true;
+      }
+      if (m_objectID < 0x70) {
+        if (m_objectID == 0x54) {
+          return true;
+        }
+        if (m_objectID < 0x55) {
+          is7e0 = m_objectID == 0x43;
+        }
+        else {
+          if (m_objectID == 99) {
+            return true;
+          }
+          is7e0 = m_objectID == 0x65;
+        }
+        goto LAB_0035aa14;
+      }
+      if (m_objectID < 0x8c) {
+        return false;
+      }
+      if (m_objectID < 0x8f) {
+        return true;
+      }
+        ID = -200;
+    LAB_0035aaa0:
+        i = 2 < (uint)(m_objectID + ID);
+        is7e0 = m_objectID + ID == 3;
+        goto LAB_0035aaba;
+      }
+      if (0x36 < m_objectID) {
+        return true;
+      }
+      if (m_objectID < 0x22) {
+        if (0x1e < m_objectID) {
+          return true;
+        }
+        if (m_objectID < 10) {
+          return false;
+        }
+        if (m_objectID < 0xe) {
+          return true;
+        }
+        i = 5 < m_objectID - 0x16U;
+        is7e0 = m_objectID - 0x16U == 6;
+        goto LAB_0035aaba;
+      }
+      if (m_objectID < 0x23) {
+        return false;
+      }
+      if (m_objectID < 0x25) {
+        return true;
+      }
+      ID2 = m_objectID - 0x2d;
+    }
+    else {
+      if (m_objectID == 0x631) {
+        return true;
+      }
+      if (m_objectID < 0x632) {
+        if (m_objectID == 0x3fe) {
+          return true;
+        }
+        if (m_objectID < 0x3ff) {
+          if (m_objectID == 0x2e9) {
+            return true;
+          }
+          if (m_objectID < 0x2ea) {
+            is7e0 = m_objectID == 0x294;
+            goto LAB_0035aa14;
+          }
+          if (m_objectID == 0x2eb) {
+            return true;
+          }
+          ID = 0x2ed;
+        }
+        else {
+          if (m_objectID == 0x4f4) {
+            return true;
+          }
+          if (0x4f4 < m_objectID) {
+            i = 4 < m_objectID - 0x531U;
+            is7e0 = m_objectID - 0x531U == 5;
+            goto LAB_0035aaba;
+          }
+          ID = 0x419;
+        }
+        goto LAB_0035aa12;
+      }
+      if (m_objectID == 0x650) {
+        return true;
+      }
+      if (m_objectID < 0x651) {
+        if (m_objectID < 0x63a) {
+          return false;
+        }
+        if (m_objectID < 0x63c) {
+          return true;
+        }
+        ID2 = m_objectID - 0x64b;
+      }
+      else {
+        if (m_objectID == 0x6db) {
+          return true;
+        }
+        if (m_objectID < 0x6dc) {
+          if (m_objectID == 0x6a8) {
+            return true;
+          }
+          ID = 0x6d7;
+          goto LAB_0035aa12;
+        }
+        ID2 = m_objectID - 0x713;
+      }
+    }
+    LAB_0035aab8:
+      i = 1 < ID2;
+      is7e0 = ID2 == 2;
+    LAB_0035aaba:
+    if (i && !is7e0) {
+        return false;
+    }
+    return true;
 }
 
+bool GameObject::ignoreEnter(){
+    return m_ignoreEnter;
+}
 
-
-/* Unknown Return: GameObject::ignoreEnter(){}; */
-
-
-/* Unknown Return: GameObject::ignoreFade(){}; */
-
-bool GameObject::init(char const* p0)
+bool GameObject::ignoreFade()
 {
-    return;
+    return m_ignoreFade;
 }
 
 
-bool GameObject::initWithTexture(cocos2d::CCTexture2D* p0)
+bool GameObject::init(char const* frame)
 {
-    return;
+    if (CCSpritePlus::initWithSpriteFrameName(frame)) {
+        commonSetup();
+        // Seems that robtop added a new class member to CCNode 
+        // TODO: Add new class member to CCNode.h in Libcocos2d headers
+        // (CCNode).m_hasNoManagement = true;
+        return true;
+    }
+    return false;
 }
 
 
-bool GameObject::isBasicEnterEffect(int p0)
+bool GameObject::initWithTexture(,CCTexture2D *texture)
 {
-    return;
+  
+    if (CCSpritePlus::initWithTexture(texture)) {
+        commonSetup();
+        return true;
+    }
+    return false;
 }
+
+
+
+/* NOTE: This is likely to be a static function... */
+
+bool GameObject::isBasicEnterEffect(int ID)
+{
+    return ((ID < 0x3c) && ((ID < 0x37) && (6 < ID - 0x16U))) ? false : (ID == 0x77b);
+}
+
 
 
 bool GameObject::isBasicTrigger()
-{
-    return;
+{  
+    bool a, b;
+    if (m_objectID < 0x64e) {
+        if (0x64b < m_objectID) {
+            return true;
+        }
+        
+        if (m_objectID < 0x22) {
+            if (0x1f < m_objectID) {
+                return true;
+            }
+            a = 5 < m_objectID - 0x16U;
+            b = m_objectID - 0x16U == 6;
+        }
+        else {
+            a = 3 < m_objectID - 0x37U;
+            b = m_objectID - 0x37U == 4;
+        }
+    }
+    
+    else {
+        if (m_objectID == 0x77b) {
+            return true;
+        }
+        if (0x77b < m_objectID) {
+            if (m_objectID < 0xbc9) {
+                return false;
+            }
+            if (0xbcd < m_objectID) {
+                if (m_objectID != 0xbcf) {
+                    return false;
+                }
+                return true;
+            }
+            return true;
+        }
+        a = m_objectID != 0x71a;
+        b = m_objectID == 0x71b;
+    }
+    
+    if (!a || b) {
+        return true;
+    }
+    return false;
 }
 
 
 bool GameObject::isColorObject()
 {
-    return;
+    if ((((m_customColorType == 0) ? m_isPixelScaleObject : m_customColorType == 1) == false) 
+            && (!hasSecondaryColor())) && (m_baseColor->m_defaultColorID  != 0x3ec) {
+        if (m_baseColor->m_defaultColorID != 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
 
 bool GameObject::isColorTrigger()
 {
-    return;
+    bool hasIt;
+    if (m_objectID != 0x2e8) {
+        if (m_objectID < 0x2e9) {
+            if (m_objectID < 0x1d) {
+                return false;
+            }
+            if (m_objectID < 0x1f) {
+                return true;
+            }
+            hasIt = m_objectID == 0x69;
+        } else {
+            if (m_objectID < 899) {
+                return false;
+            }
+            if (m_objectID < 0x385) {
+                return true;
+            }
+            hasIt = m_objectID == 0x393;
+        }
+        if (!hasIt) {
+            return false;
+        }
+    }
+    return true;
 }
 
 
 bool GameObject::isConfigurablePortal()
 {
-    return;
+    bool hasIt;
+    if (m_objectID < 0x120) {
+        if (0x11d < m_objectID) {
+            return true;
+        }
+        if (m_objectID == 0x2f) {
+            return true;
+        }
+        if (m_objectID < 0x30) {
+            if (1 < m_objectID - 0xcU) {
+                return false;
+            }
+            return true;
+        }
+        hasIt = m_objectID == 0x6f;
+    } else {
+        if (m_objectID == 0x2e9) {
+            return true;
+        }
+        if (m_objectID < 0x2ea) {
+            hasIt = m_objectID == 0x294;
+        } else {
+            if (m_objectID == 0x533) {
+                return true;
+            }
+            hasIt = m_objectID == 0x78d;
+        }
+    } 
+    return hasIt;
 }
 
+
+/* TODO: Format with 4 spaces... */
 
 bool GameObject::isEditorSpawnableTrigger()
 {
-    return;
+    int ID2;
+    unsigned int ID;
+    bool a;
+    bool b;
+
+    if (m_objectID == 0x80e) {
+        return true;
+    }
+    if (0x80e < m_objectID) {
+        if (m_objectID == 0xbce) {
+            return true;
+        }
+        if (m_objectID < 0xbcf) {
+            if (m_objectID == 0xb5b) {
+                return true;
+            }
+            if (0xb5b < m_objectID) {
+                if (m_objectID < 0xb6e) {
+                    if (0xb66 < m_objectID) {
+                        return true;
+                    }
+                    b = 7 < m_objectID - 0xb5dU;
+                    a = m_objectID - 0xb5dU == 8;
+                } else {
+                    if (m_objectID == 2999) {
+                        return true;
+                    }
+                    if (m_objectID < 2999) {
+                        return false;
+                    }
+                    b = 9 < m_objectID - 0xbbeU;
+                    a = m_objectID - 0xbbeU == 10;
+                }
+                goto LAB_0035a17e;
+            }
+            if (m_objectID < 0xb56) {
+                if (0xb52 < m_objectID) {
+                    return true;
+                }
+                ID = m_objectID - 0x812;
+            } else {
+                ID = m_objectID - 0xb57;
+            }
+        } else {
+            if (m_objectID < 0xe20) {
+                if (0xe1b < m_objectID) {
+                    return true;
+                }
+                if (m_objectID < 0xbd8) {
+                    if (0xbd4 < m_objectID) {
+                        return true;
+                    }
+                    a = m_objectID == 0xbd0;
+                    goto RETURN;
+                }
+                if (m_objectID == 0xbd9) {
+                    return true;
+                }
+                if (m_objectID < 0xbd9) {
+                    return false;
+                }
+                b = 6 < m_objectID - 0xe12U;
+                a = m_objectID - 0xe12U == 7;
+                goto LAB_0035a17e;
+            }
+            if (m_objectID < 0xe3a) {
+                if (0xe37 < m_objectID) {
+                    return true;
+                }
+                b = 2 < m_objectID - 0xe21U;
+                a = m_objectID - 0xe21U == 3;
+                goto LAB_0035a17e;
+            }
+            if (m_objectID == 0xe47) {
+                return true;
+            }
+            if (m_objectID < 0xe47) {
+                return false;
+            }
+            ID = m_objectID - 0xe4c;
+        }
+    LAB_0035a17c:
+        b = 1 < ID;
+        a = ID == 2;
+    LAB_0035a17e:
+        if (b && !a) {
+            return false;
+        }
+        return true;
+    }
+    if (m_objectID == 0x63b) {
+        return true;
+    }
+    if (m_objectID < 0x63c) {
+        if (m_objectID == 0x393) {
+            return true;
+        }
+        if (m_objectID < 0x394) {
+            if (m_objectID == 0x69) {
+                return true;
+            }
+            if (m_objectID < 0x6a) {
+                ID2 = -0x1d;
+            LAB_0035a0aa:
+                b = m_objectID + ID2 != 0;
+                a = m_objectID + ID2 == 1;
+                goto LAB_0035a17e;
+            }
+            if (m_objectID == 0x2e8) {
+                return true;
+            }
+            if (m_objectID < 0x2e8) {
+                return false;
+            }
+            ID = m_objectID - 899;
+            goto LAB_0035a17c;
+        }
+        if (m_objectID == 0x4f4) {
+            return true;
+        }
+        if (m_objectID < 0x4f5) {
+            if (m_objectID < 0x3ee) {
+                return false;
+            }
+            if (m_objectID < 0x3f0) {
+                return true;
+            }
+            ID2 = 0x419;
+        }
+        else {
+            if (m_objectID < 0x542) {
+                return false;
+            }
+            if (m_objectID < 0x544) {
+                return true;
+            }
+            ID2 = 0x631;
+        }
+    }
+    else if (m_objectID < 0x77b) {
+        if (0x777 < m_objectID) {
+            return true;
+        }
+        if (m_objectID == 0x713) {
+            return true;
+        }
+        if (m_objectID < 0x714) {
+            if (m_objectID < 0x64b) {
+                return false;
+            }
+            if (m_objectID < 0x64e) {
+                return true;
+            }
+            a = m_objectID == 0x650;
+            goto RETURN;
+        }
+        if (m_objectID < 0x716) {
+            return false;
+        }
+        if (m_objectID < 0x718) {
+            return true;
+        }
+        ID2 = 0x719;
+    } else {
+        if (m_objectID == 0x78c)
+        {
+            return true;
+        }
+        if (m_objectID < 0x78d) {
+            ID2 = -0x77c;
+            goto LAB_0035a0aa;
+        }
+        if (m_objectID < 0x78e) {
+            return false;
+        }
+        if (m_objectID < 0x790) {
+            return true;
+        }
+        ID2 = 0x7df;
+    }
+    a = m_objectID == ID2;
+RETURN:
+    return (!a);
 }
 
+/* TODO: Optimize */
 
-bool GameObject::isFacingDown()
-{
-    return;
+bool GameObject::isFacingDown(){
+    bool ret;
+    int flipY;
+    unsigned int rotation;
+    
+    rotation = (unsigned int)getObjectRotation();
+    flipY = isFlipY();
+    if (rotation % 0x5a == 0) {
+        ret = (rotation ^ (int)rotation >> 0x1f) - ((int)rotation >> 0x1f) == 0xb4;
+    } else if (rotation - 0x5b < 0xb3) {
+        ret = 1;
+    } else {
+        rotation = rotation + 0x10d;
+        ret = true;
+        if (0xb2 < rotation)
+        {
+            ret = false;
+        }
+        if (rotation < 0xb3)
+        {
+            ret = 1;
+        }
+    } 
+    if (flipY != 0) {
+        ret = ret ^ 1;
+    }
+    return ret;
 }
 
+/* TODO: Rename inner variables and Optimize code down to be Robtop Accurate*/
 
-bool GameObject::isFacingLeft()
-{
-    return;
+bool GameObject::isFacingLeft(){
+    bool ret;
+    float objectRoation;
+    bool flipY;
+    bool uVar3;
+    int extraout_r1;
+    unsigned int objectRoation;
+
+    objectRoation = getObjectRotation();
+    flipY = isFlipY();
+    uVar3 = (objectRoation % 0x5a) == 0;
+    if (uVar3) {
+        if ((int)objectRoation < 0) {
+            objectRoation = objectRoation + 0x168;
+        }
+        if (objectRoation == 0x10e) {
+            return (bool)((byte)flipY ^ 1);
+        }
+        if (objectRoation == 0x5a) {
+            uVar3 = flipY;
+        }
+        ret = uVar3 > 0;
+        if (objectRoation != 0x5a) {
+            ret = false;
+        }
+    } else {
+        if (objectRoation - 0x5b < 0xb3) {
+            ret = true;
+        } else {
+            objectRoation = objectRoation + 0x10d;
+            uVar3 = objectRoation;
+            if (0xb2 < objectRoation)
+            {
+                uVar3 = 0;
+            }
+            ret = SUB41(uVar3, 0);
+            if (objectRoation < 0xb3)
+            {
+                ret = true;
+            }
+        }
+        if (flipY != 0)
+        {
+            return (bool)(ret ^ 1);
+        }
+    }
+    return ret;
 }
 
 
 bool GameObject::isFlipX()
 {
-    return;
+    return m_isFlipX;
 }
 
 
 bool GameObject::isFlipY()
 {
-    return;
+    return m_isFlipY;
 }
 
 
 bool GameObject::isSettingsObject()
 {
-    return;
+    if (m_objectID != 0xe1d) {
+        return m_objectID == 0xe4e;
+    }
+    return true;
 }
 
 
@@ -1009,26 +2086,94 @@ void GameObject::loadGroupsFromString(std::string p0)
 
 
 
-/* Unknown Return: GameObject::makeInvisible(){}; */
-
-
-/* Unknown Return: GameObject::makeVisible(){}; */
-
-GameObject* GameObject::objectFromVector(std::vector<std::string>& p0, std::vector<void*>& p1, GJBaseGameLayer* p2, bool p3)
-{
-    return;
+void GameObject::makeInvisible(){
+    m_invisible = true;
+    m_isNotEditor = true;
+    setOpacity(0);
 }
 
 
+void GameObject::makeVisible()
+{
+    m_invisible = false;
+    m_isNotEditor = false;
+    setOpacity(255);
+}
 
-/* Unknown Return: GameObject::opacityModForMode(int p0, bool p1){}; */
+/* Currently we don't have the right things to get this one done just yet... */
+GameObject* GameObject::objectFromVector(std::vector<std::string>& p0, std::vector<void*>& p1, GJBaseGameLayer* p2, bool p3)
+{
+
+}
+
+// TODO
+// float GameObject::opacityModForMode(, int param_2, bool param_3)
+
+// {
+//     float fVar1;
+//     CCSprite *sprite;
+//     uint uVar2;
+//     CCRGBAProtocol_vtable *pCVar3;
+//     float mode;
+
+//     if (0 < param_2)
+//     {
+//         if (param_3)
+//         {
+//             sprite = (CCSprite *)m_colorSprite1;
+//         }
+//         else
+//         {
+//             sprite = (CCSprite *)m_colorSprite2;
+//         }
+//         pCVar3 = (sprite->getColor();
+//         uVar2 = (uint)(0.0 < (float)pCVar3) * (int)(float)pCVar3 & 0xff;
+//         if (uVar2 < 0xfa)
+//         {
+//             mode = (float)(longlong)(int)uVar2 * 0.004;
+//             goto RETURNMODE;
+//         }
+//     }
+//     mode = 1.0;
+// RETURNMODE:
+//     if (0 < m_opacityGroupSize)
+//     {
+//         fVar1 = groupOpacityMod(this);
+//         mode = mode * fVar1;
+//     }
+//     return mode;
+// }
+
+// TODO
+// CCNode *
+// GameObject::parentForZLayer(,int zlayer,bool unknown,int parentMode)
+
+// {
+//   PlayLayer *this_00;
+//   GameManager *GM;
+//   CCNode *pCVar1;
+//   byte m_isUIObject;
+  
+//   if (m_isEditor == false) {
+//     GM = GameManager::sharedState();
+//     m_isUIObject = m_isUIObject;
+//     this_00 = GM->m_playLayer;
+//   }
+//   else {
+//     GM = GameManager::sharedState();
+//     m_isUIObject = m_isUIObject;
+//     this_00 = (PlayLayer *)GM->m_levelEditorLayer;
+//   }
+//   pCVar1 = GJBaseGameLayer::parentForZLayer
+//                      ((GJBaseGameLayer *)this_00,zlayer,unknown,parentMode,(uint)m_isUIObject);
+//   return pCVar1;
+// }
 
 
-/* Unknown Return: GameObject::parentForZLayer(int p0, bool p1, int p2){}; */
-
-
-/* Unknown Return: GameObject::particleWasActivated(){}; */
-
+bool GameObject::particleWasActivated(){
+    /* I guess this works? :/ */
+    return (bool)(this);
+}
 
 /* Unknown Return: GameObject::perspectiveColorFrame(char const* p0, int p1){}; */
 
@@ -1054,14 +2199,31 @@ void GameObject::playShineEffect()
 
 
 
-/* Unknown Return: GameObject::quickUpdatePosition(){}; */
+void GameObject::quickUpdatePosition()
+{
+    cocos2d::CCPoint position = CCPointMake(m_lastPositionX, m_lastPositionY);
+    setPosition(position);
+    if ((m_colorSprite != nullptr) && (m_positionUpdated == false)) {
+        m_colorSprite->setPosition(position);
+    }
+}
 
 
-/* Unknown Return: GameObject::quickUpdatePosition2(){}; */
+void GameObject::quickUpdatePosition2()
+{
+    m_obPosition.x = m_lastPositionX;
+    m_obPosition.y = m_lastPositionY;
+}
 
+void GameObject::removeColorSprite()
+{
+    if (m_colorSprite != nullptr) {
+        m_colorSprite->release();
+        m_colorSprite = nullptr;
+    }
+}
 
-/* Unknown Return: GameObject::removeColorSprite(){}; */
-
+/* TODO: I'll do this one tomorrow */
 void GameObject::removeFromGroup(int p0)
 {
     return;
@@ -1069,29 +2231,74 @@ void GameObject::removeFromGroup(int p0)
 
 
 
-/* Unknown Return: GameObject::removeGlow(){}; */
+
+void GameObject::removeGlow()
+{
+    if (m_glow != nullptr) {
+        m_glow->release();
+        m_glow->removeMeAndCleanup();
+        m_glow = nullptr;
+    }
+}
+
+void GameObject::reorderColorSprite()
+{ 
+    return;
+}
+
+void GameObject::resetColorGroups()
+{
+    for (int i = 0; i < m_totalColors; i++) {
+        (*m_colorArray)[i] = 0;
+    }
+    m_totalColors = 0;
+}
 
 
-/* Unknown Return: GameObject::reorderColorSprite(){}; */
+void GameObject::resetGroupDisabled()
+{
+    m_numOfGroups = 0;
+    m_groupDisabled = false;
+}
+
+void GameObject::resetGroups(){
+    m_groupCount = 0;
+}
 
 
-/* Unknown Return: GameObject::resetColorGroups(){}; */
+static int GLOBAL_MID;
+
+void GameObject::resetMID()
+{
+    GLOBAL_MID = 10;
+}
 
 
-/* Unknown Return: GameObject::resetGroupDisabled(){}; */
+void GameObject::resetMainColorMode()
+{
+    GJSpriteColor *mainColor;
+    unsigned int colorID;
+    mainColor = getMainColor();
+    if (mainColor != nullptr) {
+        colorID = mainColor->m_defaultColorID;
+        if (colorID < 0x44d) {
+            colorID = colorID & ~(colorID >> 0x1f);
+        }
+        else {
+            colorID = 0x44d;
+        }
+        mainColor->m_defaultColorID = colorID;
+        mainColor->m_colorID = 0;
+    }
+}   
 
+void GameObject::resetMoveOffset()
+{
+    m_lastPositionX = m_startPosition.x;
+    m_lastPositionY = m_startPosition.y;
+}
 
-/* Unknown Return: GameObject::resetGroups(){}; */
-
-
-/* Unknown Return: GameObject::resetMID(){}; */
-
-
-/* Unknown Return: GameObject::resetMainColorMode(){}; */
-
-
-/* Unknown Return: GameObject::resetMoveOffset(){}; */
-
+/* TODO: 6 Unknown class members That I did not find or name off yet... */
 void GameObject::resetObject()
 {
     return;
@@ -1099,128 +2306,358 @@ void GameObject::resetObject()
 
 
 
-/* Unknown Return: GameObject::resetRScaleForced(){}; */
+void GameObject::resetRScaleForced()
+{
+    m_fScaleX = 0.0;
+    m_fScaleY = 0.0;
+    setRScaleX(1.0);
+    setRScaleY(1.0);
+}
 
+void GameObject::resetSecondaryColorMode()
+{
+    GJSpriteColor *color;
+    unsigned int colorID;
 
-/* Unknown Return: GameObject::resetSecondaryColorMode(){}; */
+    color = getSecondaryColor(this);
+    if (color != nullptr){
+        colorID = color->m_defaultColorID;
+        if (colorID < 0x44d)
+        {
+            colorID = colorID & ~((int)colorID >> 0x1f);
+        }
+        else
+        {
+            colorID = 0x44d;
+        }
+        color->m_defaultColorID = colorID;
+        color->m_colorID = 0;
+    }
+}
 
+void GameObject::restoreObject()
+{
+    m_disabled = false;
+    m_invisible = false;
+    setOpacity(0xff);
+}
 
-/* Unknown Return: GameObject::restoreObject(){}; */
+void GameObject::saveActiveColors(GameObject *this)
 
+{
+    bool rotatesFree;
+    int iVar1;
+    GameObject *pGVar2;
+    GameManager *GM;
+    GJSpriteColor *m_detailColor;
+    bool is7;
 
-/* Unknown Return: GameObject::saveActiveColors(){}; */
+    m_previousType = m_type;
+    m_colorMode = getMainColorMode();
+    // Not sire what this was about...
+    // pGVar2 = getSecondaryColorMode();
+    m_baseColorUsesHSV = m_baseColor->m_usesHsv;
+    // m_previousObjectState = this; or this..
+    if (m_detailColor != nullptr)
+    {
+        m_detailColor = m_detailColor;
+    }
+    m_detailColorUsesHSV = m_detailColor > 0;
 
+    // TODO Find GameManager's Class member's name...
+    // if (GameManager::sharedState()->field83_0x1c2 == false)
+    // {
+    //     setupColorSprite(this, m_colorMode, true);
+    //     setupColorSprite(this, (int)m_previousObjectState, false);
+    // }
+    if (m_isDontEnter != false)
+    {
+        m_ignoreEnter = true;
+    }
+    if (m_isDontFade != false)
+    {
+        m_ignoreFade = true;
+    }
+    if (m_isNoTouch != false)
+    {
+        m_type = 7;
+    }
+    rotatesFree = canRotateFree(this);
+    is7 = m_type == 7;
+    m_isNotDamaging = is7;
+    m_isStaticGroup = is7;
+    m_isObjectRect2Dirty = rotatesFree;
+    if ((m_alwaysHide != false) && (m_isEditor == false))
+    {
+        m_isNotEditor = true;
+    }
+}
+
+/* TODO: Has heavy amounts of ghidra type conversions that shouldn't exitst... */
 void GameObject::selectObject(cocos2d::ccColor3B p0)
 {
     return;
 }
 
+// TODO : Unkown Class members related to AreaOpacity apparently... 
 
-void GameObject::setAreaOpacity(float p0, float p1, int p2)
+// void
+// GameObject::setAreaOpacity(float param_2,float param_3_00,int param_4)
+
+// {
+//   byte bVar1;
+//   float fVar2;
+  
+//   if ((field290_0x47c != param_4) ||
+//      ((int)((uint)(param_3_00 < (float)field289_0x478) << 0x1f) < 0)) {
+//     bVar1 = m_opacity;
+//     fVar2 = param_2 * (float)(longlong)(int)(uint)bVar1;
+//      setOpacity)(this,(uint)(0.0 < fVar2) * (int)fVar2 & 0xff);
+//     m_opacity = bVar1;
+//     field290_0x47c = param_4;
+//     field289_0x478 = (int)param_3_00;
+//   }
+//   return;
+// }
+
+
+
+
+
+void GameObject::setChildColor(cocos2d::ccColor3B *color)
 {
-    return;
+    unsigned short colorMode;
+
+    if (m_colorSprite != (CCSprite *)0x0)
+    {
+        colorMode = (unsigned short)color->r;
+        if (color->r == 0) {
+            if ((color->g == 0) && (colorMode = (unsigned short)color->g, color->b == 0)) {
+                colorMode = (m_mainChildColorMode == 1) ? 2 : 1;
+            }
+        } else {
+            colorMode = 0;
+        }
+        m_mainChildColorMode = colorMode;
+        m_colorSprite->setColor(color);
+        m_colorSprite->setChildColor(color);
+    }
 }
 
 
-void GameObject::setChildColor(cocos2d::ccColor3B const& p0)
+void GameObject::setCustomZLayer(int zLayer)
 {
-    return;
+    if (m_zLayer == 0) {
+        m_customZLayer = zLayer;
+    }
 }
 
 
-void GameObject::setCustomZLayer(int p0)
-{
-    return;
+
+void GameObject::setDefaultMainColorMode(int colorMode){
+    GJSpriteColor *color;
+    unsigned int colorID;
+  
+    color = getMainColor();
+    if (color != nullptr) {
+        color->m_colorID = 0;
+        if (colorMode < 0x44d) {
+            colorID = colorMode & ~(colorMode >> 0x1f);
+        }
+        else {
+            colorID = 0x44d;
+        }
+        color->m_defaultColorID = colorID;
+    }
 }
 
 
-void GameObject::setDefaultMainColorMode(int p0)
+void GameObject::setDefaultSecondaryColorMode(unsigned int colorMode)
 {
-    return;
+    GJSpriteColor *color;
+    unsigned int colorID;
+  
+    color = getSecondaryColor();
+    if (color != nullptr) {
+        color->m_colorID = 0;
+        if (colorMode < 0x44d) {
+            colorID = colorMode & ~((int)colorMode >> 0x1f);
+        }
+        else {
+            colorID = 0x44d;
+        }
+        color->m_defaultColorID = uVar2;
+    }
+}
+
+void GameObject::setFlipX(bool flipx)
+{
+    if (m_isFlipX != flipx) {
+        m_isFlipX = flipx;
+        setScaleX(getScaleX() ^ 0);
+    }
+}
+
+void GameObject::setFlipX(bool flipy)
+{
+    if (m_isFlipY != flipy) {
+        m_isFlipY = flipy;
+        setScaleY(getScaleY() ^ 0);
+    }
 }
 
 
-void GameObject::setDefaultSecondaryColorMode(int p0)
+void GameObject::setGlowColor(cocos2d::ccColor3B *color)
 {
-    return;
+    if ((m_is1704 == false) && (m_glow != nullptr)) {
+        m_glow->setColor(color);
+        m_glow->setChildColor(color);
+    }
 }
 
 
-void GameObject::setFlipX(bool p0)
+void GameObject::setGlowOpacity(unsigned char opacity)
 {
-    return;
+    uint _opacity;
+    float newOpacity;
+
+    if (m_glow != nullptr) {
+        newOpacity = (float)(longlong)(int)(uint)opacity * this->m_glowOpacityMultiplier;
+        _opacity = (int)(0.0 < newOpacity) * (int)newOpacity & 0xff;
+        m_glow->setOpacity(_opacity);
+        m_glow->setChildOpacity(_opacity);
+    }
+}
+
+/* Todo: Rename m_position to m_lastPosition */
+
+void GameObject::setLastPosition(CCPoint *lastPosition)
+{
+    m_position = lastPosition;
 }
 
 
-void GameObject::setFlipY(bool p0)
+void GameObject::setMainColorMode(int colorMode)
 {
-    return;
+    GJSpriteColor *color = getMainColor(this);
+    if (color != nullptr) {
+        color->SetColorIDForMode(colorMode);
+    }
 }
 
-
-void GameObject::setGlowColor(cocos2d::ccColor3B const& p0)
-{
-    return;
-}
-
-
-void GameObject::setGlowOpacity(unsigned char p0)
-{
-    return;
-}
-
-
-void GameObject::setLastPosition(cocos2d::CCPoint const& p0)
-{
-    return;
-}
-
-
-void GameObject::setMainColorMode(int p0)
-{
-    return;
-}
-
-
+/* TODO: it's just big... */
 void GameObject::setObjectColor(cocos2d::ccColor3B const& p0)
 {
     return;
 }
 
 
-void GameObject::setObjectLabel(cocos2d::CCLabelBMFont* p0)
+void GameObject::setObjectLabel(CCLabelBMFont *font)
 {
+    /* NOOP */
     return;
 }
 
 
-void GameObject::setObjectRectDirty(bool p0)
+
+void GameObject::setObjectRectDirty(bool dirty)
 {
-    return;
+    m_objectRectDirty = dirty;
 }
 
-
+/* TODO: Big function */
 void GameObject::setOpacity(unsigned char p0)
 {
     return;
 }
 
 
-void GameObject::setOrientedRectDirty(bool p0)
+void GameObject::setOrientedRectDirty(bool dirty)
 {
-    return;
+    m_orientedBoxDirty = dirty;
 }
 
+// TODO
+// void GameObject::setPosition(cocos2d::CCPoint const &position)
+// {
+//     cocos2d::CCParticleSystem *m_particles;
+//     cocos2d::CCSprite *sprite;
+//     CCSpritePlus::setPosition(position);
+//     if (m_particles != nullptr)
+//     {
+//         if (((m_obPortalPosition).x == 0.0) && ((m_obPortalPosition).y == 0.0)){
+//             m_particles->vtable->cocos2d_CCNode_setPosition)(m_particles, position);
+//         } else {
+//             cocos2d::CCNode::convertToWorldSpace((CCNode *)&local_3c, (CCPoint *)this);
+//             cocos2d::CCNode::convertToWorldSpace((CCNode *)&local_34, (CCPoint *)this);
+        
+//             pcVar2 = (code *)m_particles->vtable->cocos2d_CCNode_setPosition;
+//             cocos2d::CCPoint::CCPoint(&CStack_2c, (position->x + (float)local_3c) - (float)local_34,
+//                                       (position->y + local_38) - local_30);
+//             (*pcVar2)(m_particles, &CStack_2c);
+//         }
+//     }
+//     sprite = m_glow;
+//     if (sprite != nullptr)
+//     {
+//         sprite->setPosition(position);
+//     }
+//     sprite = m_colorSprite;
+//     if ((sprite != nullptr) && (m_positionUpdated == false)) {
+//         sprite->setPosition(position);
+//     }
+//     return;
+// }
 
-void GameObject::setPosition(cocos2d::CCPoint const& p0)
+
+void GameObject::setRotation(float rotation)
 {
-    return;
+    cocos2d::CCSprite *sprite;
+
+    if ((m_fRotationX != rotation) || (m_fRotationY != rotation))
+    {
+        m_objectRectDirty = true;
+        m_orientedBoxDirty = true;
+        m_textureRectDirty = true;
+
+        CCSpritePlus::setRotation(rotation);
+        
+        sprite = m_glow;
+        if (sprite != nullptr) {
+            sprite->setRotation(rotation);
+        }
+        
+        sprite = m_colorSprite;
+        if ((sprite != nullptr) && (m_positionUpdated == false)) {
+            sprite->setRotation(rotation);
+        }
+
+        if ((m_particles != nullptr) && (m_noRotation == false)) {
+            m_particles->setRotation(rotation);
+        }
+
+        if ((((rotation == 90.0) || (rotation == -90.0)) || (rotation == 270.0)) || (rotation == -270. 0)) {
+            m_objectRectCanRotate = true;
+        } else {
+            m_objectRectCanRotate = false;
+        }
+    }
 }
 
-
-void GameObject::setRRotation(float p0)
+void GameObject::setRRotation(float rrotation)
 {
-    return;
+    float updatedRoatation;
+    float _newRRotation;
+
+    updatedRoatation = m_defaultRotationX + m_UnkownRotation;
+    _newRRotation = updatedRoatation + rrotation;
+    if (updatedRoatation == m_defaultRotationY + m_defaultRoation)
+    {
+        setRotation(_newRRoation);
+    } else {
+        setRotationX(_newRRotation);
+        setRotationY(m_defaultRotationY + m_defaultRoation + rrotation);
+    }
 }
 
 
@@ -1248,15 +2685,73 @@ void GameObject::setRotation(float p0)
 }
 
 
-void GameObject::setRotationX(float p0)
+
+void GameObject::setRotationX(float rotation)
 {
-    return;
+    cocos2d::CCSprite *sprite;
+
+    if (m_fRotationX != rotation){
+        m_objectRectDirty = true;
+        m_orientedBoxDirty = true;
+        m_textureRectDirty = true;
+
+        CCSpritePlus::setRotationX(rotation);
+        
+        sprite = m_glow;
+        if (sprite != nullptr) {
+            sprite->setRotationX(rotation);
+        }
+        
+        sprite = m_colorSprite;
+        if ((sprite != nullptr) && (m_positionUpdated == false)) {
+            sprite->setRotationX(rotation);
+        }
+
+        if ((m_particles != nullptr) && (m_noRotation == false)) {
+            m_particles->setRotationX(rotation);
+        }
+
+        if ((((rotation == 90.0) || (rotation == -90.0)) || (rotation == 270.0)) || (rotation == -270. 0)) {
+            m_objectRectCanRotate = true;
+        } else {
+            m_objectRectCanRotate = false;
+        }
+    }
 }
 
 
-void GameObject::setRotationY(float p0)
+
+void GameObject::setRotationX(float rotation)
 {
-    return;
+    cocos2d::CCSprite *sprite;
+
+    if (m_fRotationY != rotation){
+        m_objectRectDirty = true;
+        m_orientedBoxDirty = true;
+        m_textureRectDirty = true;
+
+        CCSpritePlus::setRotationY(rotation);
+        
+        sprite = m_glow;
+        if (sprite != nullptr) {
+            sprite->setRotationY(rotation);
+        }
+        
+        sprite = m_colorSprite;
+        if ((sprite != nullptr) && (m_positionUpdated == false)) {
+            sprite->setRotationY(rotation);
+        }
+
+        if ((m_particles != nullptr) && (m_noRotation == false)) {
+            m_particles->setRotationY(rotation);
+        }
+
+        if ((((rotation == 90.0) || (rotation == -90.0)) || (rotation == 270.0)) || (rotation == -270. 0)) {
+            m_objectRectCanRotate = true;
+        } else {
+            m_objectRectCanRotate = false;
+        }
+    }
 }
 
 
@@ -1423,7 +2918,18 @@ void GameObject::updateObjectEditorColor()
 
 
 
-/* Unknown Return: GameObject::updateOrientedBox(){}; */
+void GameObject::updateOrientedBox(){
+    if (m_OBB2D == nullptr) {
+        m_OBB2D = OBB2D::create(getRealPosition() + getBoxOffset(), m_spriteSizeWidth * m_OBB2DWidth * m_customScaleX,
+                                m_spriteSizeHeight * m_OBB2DHeight * m_customScaleY,
+                                -(getObjectRotation() * 0.01745329));
+        m_OBB2D->retain();
+    } else if (m_orientedRectDirty) {
+        m_OBB2D->calculateWithCenter(getRealPosition() + getBoxOffset(), m_spriteSizeWidth * m_OBB2DWidth * m_customScaleX,
+               m_spriteSizeHeight * m_OBB2DHeight * m_customScaleY,-(getObjectRotation() * 0.01745329)) ;
+        m_orientedRectDirty = false;
+    }
+}
 
 
 /* Unknown Return: GameObject::updateParticleColor(cocos2d::ccColor3B const& p0){}; */
@@ -1463,4 +2969,3 @@ void GameObject::updateObjectEditorColor()
 
 
 /* Unknown Return: GameObject::usesSpecialAnimation(){}; */
-
