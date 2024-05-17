@@ -76,6 +76,8 @@
 #include "UploadActionPopup.h"
 #include "PlatformToolbox.h"
 #include "GJValueTween.h"
+#include "GJSpriteColor.h"
+#include "CCLightStrip.h"
 
 
 // Layer Related Classes
