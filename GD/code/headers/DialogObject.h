@@ -1,16 +1,38 @@
+#ifndef __DIALOGOBJECT_H__
+#define __DIALOGOBJECT_H__
+
 #include "includes.h"
 
 class DialogObject : public cocos2d::CCObject {
     public:
-        std::string m_sText;
-        std::string m_sTitle;
-        int m_nDialogType;
-        cocos2d::ccColor3B m_pColour;
-        float m_fTextWidth;
-        bool m_bCanSkip;
+        std::string m_text;
+        std::string m_npcName;
+        int m_dialogType;
+        cocos2d::ccColor3B m_color;
+        float m_textWidth;
+        bool m_canSkip;
 
-        static DialogObject* create(std::string _title, std::string _text, int _type, float _width, bool _canSkip, cocos2d::ccColor3B _colour);
-        bool init(std::string _title, std::string _text, int _type, float _width, bool _canSkip, cocos2d::ccColor3B _colour);
+        static DialogObject* create(
+            std::string npc, 
+            std::string text, 
+            int type, 
+            float width, 
+            bool canSkip, 
+            cocos2d::ccColor3B colour
+        );
+
+        bool init(
+            std::string npc, 
+            std::string text, 
+            int type, 
+            float width, 
+            bool canSkip, 
+            cocos2d::ccColor3B colour
+        );
+
 };
 
+
+
+#endif // __DIALOGOBJECT_H__
 
