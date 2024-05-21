@@ -1,10 +1,10 @@
 #include "../headers/includes.h"
 
-DialogObject* DialogObject::create(std::string _title, std::string _text, int _type, float _width, bool _canSkip, cocos2d::ccColor3B _colour)
+DialogObject* DialogObject::create(std::string npc, std::string text, int type, float width, bool canSkip, cocos2d::ccColor3B color)
 {
 	auto pRet = new DialogObject;
 
-	if (pRet && pRet->init(_title, _text, _type, _width, _canSkip, _colour))
+	if (pRet && pRet->init(npc, text, type, width, canSkip, colour))
 	{
 		pRet->autorelease();
 		return pRet;
@@ -14,13 +14,14 @@ DialogObject* DialogObject::create(std::string _title, std::string _text, int _t
 	return nullptr;
 }
 
-bool DialogObject::init(std::string _title, std::string _text, int _type, float _width, bool _canSkip, cocos2d::ccColor3B _colour)
+bool DialogObject::init(std::string npc, std::string text, int type, float width, bool canSkip, cocos2d::ccColor3B colour)
 {
-	m_sTitle = _title;
-	m_sText = _text;
-	m_nDialogType = _type;
-	m_fTextWidth = _width;
-	m_bCanSkip = _canSkip;
-	m_pColour = _colour;
+	m_npcName = npc;
+	m_text = text;
+	m_dialogType = type;
+	m_textWidth = width;
+	m_canSkip = canSkip;
+	m_color = colour;
 	return true;
 }
+
