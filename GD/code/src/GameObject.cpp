@@ -8,6 +8,7 @@
 /* I will be posting complexities of functions from ghidra's own
  * built-in scripts to show their difficulty so if I skip over any 
  * of them, you'll know why */
+
 void GameObject::activateObject()
 {
     return;
@@ -290,7 +291,10 @@ bool GameObject::belongsToGroup(int groupID)
 }
 
 
-/* Unknown Return: GameObject::blendModeChanged(){}; */
+void GameObject::blendModeChanged()
+{
+    return /* NOOP */;
+}
 
 
 cocos2d::CCRect GameObject::calculateOrientedBox(){
@@ -2309,7 +2313,7 @@ void GameObject::saveActiveColors(GameObject *this)
     // Not sire what this was about...
     // pGVar2 = getSecondaryColorMode();
     m_baseColorUsesHSV = m_baseColor->m_usesHsv;
-    // m_previousObjectState = this; or this..
+    // m_previousObjectState = this; or .
     if (m_detailColor != nullptr)
     {
         m_detailColor = m_detailColor;
@@ -2765,10 +2769,42 @@ void GameObject::setupCustomSprites(std::string p0)
 /* Unknown Return: GameObject::setupSpriteSize(){}; */
 
 
-/* Unknown Return: GameObject::shouldBlendColor(GJSpriteColor* p0, bool p1){}; */
+bool GameObject::shouldBlendColor(GJSpriteColor *spriteColor, bool mode)
+{
+    bool shouldBlend;
+    unsigned int colorMode;
+
+    shouldBlend = m_isBlendable;
+    while (spriteColor->getColorMode() == 0) {
+        colorMode = spriteColor->getColorMode();
+        if (m_isEditor != false)
+            return GameManager::sharedState()->m_levelEditorLayer->shouldBlend(colorMode);
+    
+        if (colorMode < 0x3f0) {
+            if (0x3ec < colorMode) {
+                return true;
+            }
+            if (colorMode == 0) {
+                return false;
+            }
+            return GameManager::sharedState()->m_playLayer->shouldBlend(colorMode);
+        }
+        if (colorMode != 0x3f4) 
+            return GameManager::sharedState()->m_playLayer->shouldBlend(colorMode);
+        spriteColor = m_baseColor;
+    }
+    if (m_isEditor == false) {
+        return false;
+    }
+    colorMode = 0;
+    return GameManager::sharedState()->m_levelEditorLayer->shouldBlend(colorMode);
+}
 
 
-/* Unknown Return: GameObject::shouldDrawEditorHitbox(){}; */
+bool GameObject::shouldDrawEditorHitbox()
+{
+    return true;
+}
 
 
 /* Unknown Return: GameObject::shouldLockX(){}; */
@@ -2777,13 +2813,33 @@ void GameObject::setupCustomSprites(std::string p0)
 /* Unknown Return: GameObject::shouldNotHideAnimFreeze(){}; */
 
 
-/* Unknown Return: GameObject::shouldShowPickupEffects(){}; */
+bool GameObject::shouldShowPickupEffects()
+{
+    if (((m_hideEffects == false) && ((m_isNotEditor == false)))) {
+        if (getOpacity() != 0) 
+            return true;
+    
+        if (m_colorSprite != nullptr)
+            return m_colorSprite->getOpacity() != 0;
+    }
+    return false;
+}
+
+bool GameObject::slopeFloorTop()
+{
+    if ((m_slopeType & -3) != 1) {
+        if (m_slopeType != 5)
+            return m_slopeType == 6;
+        return true;
+    }
+    return false;
+}
 
 
-/* Unknown Return: GameObject::slopeFloorTop(){}; */
-
-
-/* Unknown Return: GameObject::slopeWallLeft(){}; */
+bool GameObject::slopeWallLeft()
+{
+    return ((m_slopeType - 2) > 2) && m_slopeType == 6;
+}
 
 
 /* Unknown Return: GameObject::slopeYPos(cocos2d::CCRect p0){}; */
@@ -2798,7 +2854,10 @@ void GameObject::setupCustomSprites(std::string p0)
 /* Unknown Return: GameObject::spawnDefaultPickupParticle(GJBaseGameLayer* p0){}; */
 
 
-/* Unknown Return: GameObject::spawnXPosition(){}; */
+float GameObject::spawnXPosition()
+{
+    return getPosition().x;
+}
 
 
 /* Unknown Return: GameObject::transferObjectRect(cocos2d::CCRect& p0){}; */
@@ -2816,7 +2875,12 @@ void GameObject::triggerObject(GJBaseGameLayer* p0, int p1, std::vector<int> con
 
 
 
-/* Unknown Return: GameObject::unclaimParticle(){}; */
+void GameObject::unclaimParticle(){
+    GJBaseGameLayer* base = (m_isEditor) ? GameManager::sharedState()->m_levelEditorLayer : GameManager::sharedState()->m_playLayer;
+    base->unclaimParticle(m_particleKey, m_particles);
+    m_particles = nullptr;
+}
+
 
 void GameObject::update(float p0)
 {
