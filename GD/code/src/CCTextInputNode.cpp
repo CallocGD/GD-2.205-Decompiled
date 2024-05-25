@@ -6,16 +6,19 @@
 
 
 
+
 /* TODO: I thought about writing robtop a little unique script for loading this 
 balcklist as some words repeat themselves in here and I thought maybe I could be 
 helpful by doing just that. 
 
 What is an IME?
-IME stands for 
+IME stands for:
     I - Input 
     M - Method
     E - Editor
+
 https://developer.mozilla.org/en-US/docs/Glossary/Input_method_editor
+
 */
 
 cocos2d::CCArray *LoadGJBlacklist()
@@ -492,6 +495,13 @@ void CCTextInputNode::setAllowedChars(std::string filter) {
     m_allowedChars = filter;
 }
 
+/* Might still exist as an inlined function... */
+void CCTextInputNode::setProfanityFilter(bool value)
+{
+    m_filterProfanity = value;
+}
+
+
 
 /* Determines if IME is going to be opened or closed and then returns a boolean */
 bool CCTextInputNode::onClickTrackNode(bool isKeyboardOpen)
@@ -508,8 +518,7 @@ bool CCTextInputNode::onTextFieldAttachWithIME(cocos2d::CCTextFieldTTF *tField)
     }
     m_selected = true;
 
-    // Undefined
-    // PlatformToolbox::setKeyboardState(true);
+    PlatformToolbox::setKeyboardState(true);
     
     if (m_doubleInput) {
         cstr = m_textField->getString();
@@ -549,12 +558,14 @@ bool CCTextInputNode::onTextFieldAttachWithIME(cocos2d::CCTextFieldTTF *tField)
 
 bool CCTextInputNode::onTextFieldDetachWithIME(cocos2d::CCTextFieldTTF *tField)
 {
+    /* IME Is closing so hide cursor... */
     if (m_cursor != nullptr)
     {
         m_cursor->setVisible(false);
     }
 
-    if (m_filterSwearWords != false)
+    /* Should we filter Profanity? */
+    if (m_filterSwearWords)
     {
         const char *t_string = tField->getString();
         std::string textString = "";
@@ -588,13 +599,13 @@ bool CCTextInputNode::onTextFieldDetachWithIME(cocos2d::CCTextFieldTTF *tField)
         {
             idx = (reinterpret_cast<cocos2d::CCString *>(gjblacklist->objectAtIndex(j)))->getCString();
             pos = textString.find(idx);
-            if (pos != std::string::npos)
-            {
+            if (pos != std::string::npos) {
                 textString.replace(pos, idx.size(), " ");
                 SaidCurseWord = true;
             }
         }
-        if (!SaidCurseWord)
+
+        if (SaidCurseWord == false)
         {
             passedString = textString;
         }
@@ -608,7 +619,7 @@ bool CCTextInputNode::onTextFieldDetachWithIME(cocos2d::CCTextFieldTTF *tField)
     updateLabel(getTextString());
 
     m_selected = false;
-    PlatformToolbox::setKeyboardState(0);
+    PlatformToolbox::setKeyboardState(false);
 
     if (m_delegate != nullptr)
     {
@@ -622,6 +633,58 @@ bool CCTextInputNode::onTextFieldDetachWithIME(cocos2d::CCTextFieldTTF *tField)
 }
 
 
+void CCTextInputNode::refreshLabel(){
+
+    if ((m_placeholderLabel == nullptr) && (m_textArea == nullptr)){
+        return;
+    }
+    
+    bool has_text = std::basic_string(m_textField->getString()) == "";
+
+
+    if (m_placeholderLabel == nullptr) {
+        if (m_textArea != nullptr) {
+            m_textArea->colorAllLabels((has_text) ? m_labelColor : m_textColor);
+        }
+        return;
+    }
+
+    float label;
+
+    if (has_text) {
+        SET_COLOR: {
+            m_placeholderLabel->setScale();
+
+            label = m_maxLabelWidth / m_placeholderLabel->getContentSize().width;
+
+            if (m_maxLabelWidth == label || m_maxLabelWidth < label != (m_maxLabelWidth || label)) {
+                label = m_maxLabelWidth;
+                label = label / m_placeholderLabel->getContentSize().width;
+            }
+            m_placeholderLabel->setScale(label);
+
+            /* If there was no goto, this part wouldn't make very much sense.. */
+            if (!has_text) {
+                m_placeholderLabel->setColor(m_textColor);
+                return;
+            }
+
+            m_placeholderLabel->setColor(m_labelColor);
+        }
+    }
+
+    else {
+        label = m_placeholderScale;
+        if (label == 0.0 || label < 0.0 != label) 
+            goto SET_COLOR;
+        m_placeholderLabel->setScale(label);
+    }
+}
+
+
+void CCTextInputNode::registerWithTouchDispatcher(){
+    cocos2d::CCDirector::sharedDirector()->getTouchPadDispatcher()->addPrioTargetedDelegate(this,-500,false);
+}
 
 
 bool CCTextInputNode::textChanged(){
@@ -633,338 +696,203 @@ bool CCTextInputNode::textChanged(){
     return changed;
 }
 
+void CCTextInputNode::updateBlinkLabel()
+{
+    /* note: pLens is the blink label... */
+    updateBlinkLabelToChar(m_textField->m_pLens);
+}
 
-
-/* complexity: 12, 
- * Too Many Moving parts at the moment even with everything else done 
- * (Yes I already did everything even the updated functions for CCLabelBMFont)
- *
- * There's several ways we can solve this one that I can think of on top of my head
- * 
- * - We mod the game with a custom/dummy version of CCTextInputNode somewhere to try this 
- * function until it is correctly done we can also log all possible incoming calls from 
- * CCNode Specifically for this function and log them to a computer by using a custom flag 
- * or mutex to handle when it's allowed to log and we can give it a special tag to help us 
- * out further.
- * 
- * - We rip through the assembly to try and figure out what the hell is going on with the 
- * second part shown.
- */
 void CCTextInputNode::updateBlinkLabelToChar(int blinkLabel)
 {
+    
+    if (m_placeholderLabel != nullptr || m_textArea != nullptr && m_cursor != nullptr){
 
-    if (m_placeholderLabel != nullptr || m_textArea != nullptr && m_cursor != nullptr)
-    {
-        if (m_placeholderLabel == nullptr)
-        {
-            if (blinkLabel > -1)
-            {
-                for (unsigned int i = 0; i < m_textArea->getChildrenCount(); i++)
-                {
+        float xpos, ypos;
+
+        /* We need to find our placeholder label and update the blinkLabel depending on it's frame */
+        
+        if (m_placeholderLabel == nullptr) {
+            if (blinkLabel > -1) {
+                for (unsigned int i = 0; i < m_textArea->getChildrenCount(); i++) {
                     m_placeholderLabel = reinterpret_cast<cocos2d::CCLabelBMFont *>(m_textArea->getChildren()->objectAtIndex(i));
-                    auto labelChildren = m_placeholderLabel->getChildren();
-                    auto labelChildPopultation = labelChildren->count();
-                    if (blinkLabel <= static_cast<int>(labelChildPopultation))
-                    {
+                    auto labelChildPopultation = m_placeholderLabel->getChildren()->count();
+                    if (blinkLabel <= labelChildPopultation){
+                        blinkLabel = -1;
                         break;
                     }
+                    
                     blinkLabel -= labelChildPopultation;
                 }
+            } else {
+                blinkLabel = -1;
             }
-     
-            blinkLabel = -1;
+
             m_placeholderLabel = reinterpret_cast<cocos2d::CCLabelBMFont*>(m_textArea->m_bitmatFont->getChildren()->lastObject());
             m_placeholderLabel->removeFromParent();
-            m_placeholderLabel->setPosition(m_placeholderLabel->convertToWorldSpace(m_textArea->m_bitmatFont->getParent()->getPosition()));
+            auto LabelPos1 = m_placeholderLabel->convertToWorldSpace(m_textArea->m_bitmatFont->getParent()->getPosition());
+            m_placeholderLabel->setPosition(LabelPos1);
+            auto LabelPos2 = m_placeholderLabel->convertToWorldSpace(cocos2d::CCPointZero);
+            ypos = (LabelPos2.x - LabelPos2.y) - LabelPos1.y;
+        } else {
+            ypos = 0.0;
+        }
+        auto delayed_text = m_placeholderLabel->getChildren();
+
+        /* Solved by Making a Geode-mod that watchdogs this function so I could fix CCLabelBMFont's vtable, 
+        I'll make tools in python that can generate watchdog code in the future */
+
+        /* are we in a blink frame and if so reposition X to that position */
+        if ((blinkLabel < 0) || (delayed_text->count() <= blinkLabel)){
+        
+            xpos = m_placeholderLabel->getContentSize().width * m_placeholderLabel->getScale() + m_placeholderLabel->getScaleX() + m_placeholderLabel->getScaleX();
+        } else {
+            /* Had to use a little bit of hacky ram-watch with this function */
+            xpos = m_placeholderLabel->getLetterPosXLeft(reinterpret_cast<cocos2d::CCSprite>(cocos2d::CCArray::objectAtIndex(m_delayedText, blinkLabel)), m_fontValue2, m_isCharFont);
+            xpos += m_fontValue1 * m_placeholderLabel->getContentSize().width;
         }
 
+        if (m_textField->getString() == std::string("")){
+            xpos = 2.0;
+        }
 
-        /* Ghidra did a shitty job with this part and I will need to let someone else look into this one... 
-        The problem stems from the fact that it's called vtables that it's not supposed to be calling which is what is
-        making everything so jacked up & hard to read. */
-        /*
-            m_delayedText =
-         (CCArray *)
-         (*(code *)m_placeholderLabel->vtable->cocos2d_CCNode_getChildrenCount)(m_placeholderLabel );
-    if ((blinkLabel < 0) || (i = cocos2d::CCArray::count(m_delayedText), i <= (uint)blinkLabel)) {
-      placeholderLabelScaledContentSize =
-           (CCSize *)
-           (*(code *)m_placeholderLabel->vtable->cocos2d_CCNode_getScaledContentSize)
-                     (m_placeholderLabel);
-      xpos = placeholderLabelScaledContentSize->width;
-      placeholderLabelScale =
-           (CCSize *)
-           (*(code *)m_placeholderLabel->vtable->cocos2d_CCNode_setScale)(m_placeholderLabel);
-      fVar2 = (CCSize *)
-              (*(code *)m_placeholderLabel->vtable->cocos2d_CCLabelBMFont_setScaleY)
-                        (m_placeholderLabel);
-      xpos = xpos * (float)placeholderLabelScale + (float)fVar2 + (float)fVar2;
-    }
-    else {
-      textSprite = (CCSprite *)cocos2d::CCArray::objectAtIndex(m_delayedText,blinkLabel);
-      xpos = cocos2d::CCLabelBMFont::getLetterPosXLeft
-                       (m_placeholderLabel,textSprite,this->m_fontValue2,this->m_isCharFont);
-      m_fontValue1 = this->m_fontValue1;
-      placeholderLavelScale2 =
-           (float)(*(code *)m_placeholderLabel->vtable->cocos2d_CCLabelBMFont_setScaleY)
-                            (m_placeholderLabel);
-      xpos = xpos + m_fontValue1 * placeholderLavelScale2;
-    }
-    __s_00 = (char *)(*(code *)this->m_textField->vtable->cocos2d_CCTextFieldTTF_getString)();
-    std::basic_string::basic_string((basic_string *)&auStack_54,__s_00);
-    std::basic_string::basic_string((basic_string *)&bStack_4c,"");
-    __strcmp = std::operator==((void **)(basic_string *)&auStack_54,
-                               (void **)(basic_string *)&bStack_4c);
-    std::basic_string::~basic_string((basic_string *)&bStack_4c);
-    std::basic_string::~basic_string((basic_string *)&auStack_54);
-    m_cursor = this->m_cursor;
-    call = (code *)m_cursor->vtable->cocos2d_CCNode_getPosition;
-    if (!__strcmp) {
-      xpos = 2.0;
-    }
-    placeholderLabelPosition =
-         (CCPoint *)
-         (*(code *)m_placeholderLabel->vtable->cocos2d_CCNode_setPosition)(m_placeholderLabel);
-    placeholderLabelSize =
-         (CCSize *)
-         (*(code *)m_placeholderLabel->vtable->cocos2d_CCNode_getScaledContentSize)
-                   (m_placeholderLabel);
-    placeholderLabelSizeWidth = placeholderLabelSize->width;
-    placeholderLabelAnchorPoints =
-         (CCPoint *)
-         (*(code *)m_placeholderLabel->vtable->cocos2d_CCNode_getAnchorPointInPoints)
-                   (m_placeholderLabel);
-    m_fontValue1 = placeholderLabelAnchorPoints->x;
-    placeholdLabelScale =
-         (float)(*(code *)m_placeholderLabel->vtable->cocos2d_CCNode_setScale)(m_placeholderLabel );
-    placeholderLabelContentSize =
-         (CCSize *)
-         (*(code *)m_placeholderLabel->vtable->cocos2d_CCNode_getScaledContentSize)
-                   (m_placeholderLabel);
-    placeholderLabelContentSize_width = placeholderLabelContentSize->width;
-    placeholderLavelScale2 =
-         (float)(*(code *)m_placeholderLabel->vtable->cocos2d_CCNode_setScale)(m_placeholderLabel );
-    cocos2d::CCPoint::CCPoint
-              ((CCPoint *)(basic_string *)&auStack_54,
-               (placeholderLabelSizeWidth * (1.0 - m_fontValue1) * placeholdLabelScale -
-               placeholderLabelContentSize_width * placeholderLavelScale2) + xpos,fVar1 - 1.0);
-    cocos2d::CCPoint::operator+(placeholderLabelPosition,(CCPoint *)(basic_string *)&auStack_54);
-    (*call)(m_cursor,(basic_string *)&bStack_4c);
-    m_cursor = this->m_cursor;
-    call = (code *)m_cursor->vtable->cocos2d_CCNode_getAnchorPoint;
-    placeholderAnchorPoint =
-         (CCPoint *)
-         (*(code *)m_placeholderLabel->vtable->cocos2d_CCNode_getAnchorPointInPoints)
-                   (m_placeholderLabel);
-    cocos2d::CCPoint::CCPoint((CCPoint *)(basic_string *)&bStack_4c,0.5,placeholderAnchorPoint->y) ;
-    (*call)(m_cursor,(basic_string *)&bStack_4c);
-        
-        
-        ASSEMBLY IS AS Follows 
-
-                                     LAB_002fdbf6                                    XREF[1]:     002fdbf0 (j)   
-        002fdbf6 23  68           ldr        r3,[m_placeholderLabel ,#0x0 ]
-        002fdbf8 20  46           mov        placeholderLabelPos ,m_placeholderLabel
-        002fdbfa d3  f8  ec  30    ldr.w      r3,[r3,#0xec ]
-        002fdbfe 98  47           blx        r3
-        002fdc00 00  2e           cmp        r6,#0x0
-        002fdc02 07  46           mov        i,placeholderLabelPos
-        002fdc04 c0  f2  a5  80    blt.w      LAB_002fdd52
-        002fdc08 ab  f2  6a  fa    bl         cocos2d::CCArray::count                          uint count(CCArray * this)
-        002fdc0c b0  42           cmp        placeholderLabelPos ,r6
-        002fdc0e 40  f2  a0  80    bls.w      LAB_002fdd52
-        002fdc12 31  46           mov        blinkLabel ,r6
-        002fdc14 38  46           mov        placeholderLabelPos ,i
-        002fdc16 ab  f2  6c  fa    bl         cocos2d::CCArray::objectAtIndex                  CCObject * objectAtIndex(CCArray
-        002fdc1a d5  f8  58  21    ldr.w      r2,[r5,#0x158 ]
-        002fdc1e 95  f8  5c  31    ldrb.w     r3,[r5,#0x15c ]
-        002fdc22 01  46           mov        blinkLabel ,textSprite
-        002fdc24 20  46           mov        textSprite ,m_placeholderLabel
-        002fdc26 b5  f2  41  ff    bl         cocos2d::CCLabelBMFont::getLetterPosXLeft        float getLetterPosXLeft(CCLabelB
-        002fdc2a 23  68           ldr        r3,[m_placeholderLabel ,#0x0 ]
-        002fdc2c d5  ed  55  8a    vldr.32    s17 ,[r5,#0x154 ]
-        002fdc30 5b  6c           ldr        r3,[r3,#0x44 ]
-        002fdc32 08  ee  10  0a    vmov       s16 ,xpos
-        002fdc36 20  46           mov        xpos ,m_placeholderLabel
-        002fdc38 98  47           blx        r3
-        002fdc3a 07  ee  90  0a    vmov       s15 ,xpos
-        002fdc3e 08  ee  a7  8a    vmla.f32   s16 ,s17 ,s15
-                             LAB_002fdc42                                    XREF[1]:     002fdd84 (j)   
-        002fdc42 d5  f8  7c  01    ldr.w      xpos ,[r5,#0x17c ]
-        002fdc46 03  af           add        i,sp,#0xc
-        002fdc48 05  ae           add        r6,sp,#0x14
-        002fdc4a 03  68           ldr        r3,[xpos ,#0x0 ]
-        002fdc4c d3  f8  68  32    ldr.w      r3,[r3,#0x268 ]
-        002fdc50 98  47           blx        r3
-        002fdc52 01  aa           add        r2,sp,#0x4
-        002fdc54 01  46           mov        blinkLabel ,__s
-        002fdc56 38  46           mov        __s ,i
-        002fdc58 5f  f0  6c  f2    bl         std::basic_string::basic_string                  basic_string * std::basic_string
-        002fdc5c 53  49           ldr        blinkLabel ,[DAT_002fddac ]                       = 0061E8A2h
-        002fdc5e 30  46           mov        __s ,r6
-        002fdc60 02  aa           add        r2,sp,#0x8
-        002fdc62 79  44           add        blinkLabel =>DAT_0091c508 ,pc
-        002fdc64 5f  f0  66  f2    bl         std::basic_string::basic_string                  basic_string * std::basic_string
-        002fdc68 31  46           mov        blinkLabel ,r6
-        002fdc6a 38  46           mov        __s ,i
-        002fdc6c 5d  f0  7e  f6    bl         std::operator==                                  bool std::operator==(void * * pa
-        002fdc70 b7  ee  00  aa    vmov.f32   s20 ,0x3f800000
-        002fdc74 81  46           mov        m_delayedText ,__strcmp
-        002fdc76 30  46           mov        __strcmp ,r6
-        002fdc78 5c  f0  9e  f7    bl         std::basic_string::~basic_string                 void std::basic_string::~basic_s
-        002fdc7c 38  46           mov        __strcmp ,i
-        002fdc7e 5c  f0  9b  f7    bl         std::basic_string::~basic_string                 void std::basic_string::~basic_s
-        002fdc82 b9  f1  00  0f    cmp.w      m_delayedText ,#0x0
-        002fdc86 f0  ee  00  7a    vmov.f32   s15 ,0x40000000
-        002fdc8a d5  f8  78  91    ldr.w      m_cursor ,[r5,#0x178 ]
-        002fdc8e 20  46           mov        __strcmp ,m_placeholderLabel
-        002fdc90 d9  f8  00  30    ldr.w      r3,[m_cursor ,#0x0 ]
-        002fdc94 d3  f8  5c  a0    ldr.w      call ,[r3,#0x5c ]
-        002fdc98 23  68           ldr        r3,[m_placeholderLabel ,#0x0 ]
-        002fdc9a 1b  6e           ldr        r3,[r3,#0x60 ]
-        002fdc9c 08  bf           it         eq
-        002fdc9e b0  ee  67  8a    vmov.eq.   s16 ,s15
-        002fdca2 98  47           blx        r3
-        002fdca4 23  68           ldr        r3,[m_placeholderLabel ,#0x0 ]
-        002fdca6 d3  f8  9c  30    ldr.w      r3,[r3,#0x9c ]
-        002fdcaa 83  46           mov        r11 ,placeholderLabelPosition
-        002fdcac 20  46           mov        placeholderLabelPosition ,m_placeholderLabel
-        002fdcae 98  47           blx        r3
-        002fdcb0 23  68           ldr        r3,[m_placeholderLabel ,#0x0 ]
-        002fdcb2 d3  f8  90  30    ldr.w      r3,[r3,#0x90 ]
-        002fdcb6 90  ed  00  9a    vldr.32    placeholderLabelSizeWidth ,[placeholderLabelSiz
-        002fdcba 20  46           mov        placeholderLabelSize ,m_placeholderLabel
-        002fdcbc 98  47           blx        r3
-        002fdcbe 23  68           ldr        r3,[m_placeholderLabel ,#0x0 ]
-        002fdcc0 5b  6d           ldr        r3,[r3,#0x54 ]
-        002fdcc2 d0  ed  00  8a    vldr.32    m_fontValue1 ,[placeholderLabelAnchorPoints->x ]
-        002fdcc6 20  46           mov        placeholderLabelAnchorPoints ,m_placeholderLabel
-        002fdcc8 98  47           blx        r3
-        002fdcca 23  68           ldr        r3,[m_placeholderLabel ,#0x0 ]
-        002fdccc 7a  ee  68  8a    vsub.f32   m_fontValue1 ,s20 ,m_fontValue1
-        002fdcd0 d3  f8  9c  30    ldr.w      r3,[r3,#0x9c ]
-        002fdcd4 69  ee  28  8a    vmul.f32   m_fontValue1 ,placeholderLabelSizeWidth ,m_font
-        002fdcd8 07  ee  90  0a    vmov       s15 ,placeholdLabelScale
-        002fdcdc 20  46           mov        placeholdLabelScale ,m_placeholderLabel
-        002fdcde 68  ee  a7  8a    vmul.f32   m_fontValue1 ,m_fontValue1 ,s15
-        002fdce2 98  47           blx        r3
-        002fdce4 23  68           ldr        r3,[m_placeholderLabel ,#0x0 ]
-        002fdce6 5b  6d           ldr        r3,[r3,#0x54 ]
-        002fdce8 90  ed  00  9a    vldr.32    placeholderLabelContentSize_width ,[placeholde
-        002fdcec 20  46           mov        placeholderLabelContentSize ,m_placeholderLabel
-        002fdcee 98  47           blx        r3
-        002fdcf0 07  ee  90  0a    vmov       s15 ,placeholderLavelScale2
-        002fdcf4 38  46           mov        placeholderLavelScale2 ,i
-        002fdcf6 49  ee  67  8a    vmls.f32   m_fontValue1 ,placeholderLabelContentSize_width
-        002fdcfa 78  ee  88  7a    vadd.f32   s15 ,m_fontValue1 ,s16
-        002fdcfe 17  ee  90  1a    vmov       blinkLabel ,s15
-        002fdd02 79  ee  ca  7a    vsub.f32   s15 ,s19 ,s20
-        002fdd06 17  ee  90  2a    vmov       r2,s15
-        002fdd0a a8  f2  81  fa    bl         cocos2d::CCPoint::CCPoint                        void CCPoint(CCPoint * this, flo
-        002fdd0e 3a  46           mov        r2,i
-        002fdd10 30  46           mov        placeholderLavelScale2 ,r6
-        002fdd12 59  46           mov        blinkLabel ,r11
-        002fdd14 a8  f2  89  fa    bl         cocos2d::CCPoint::operator+                      CCPoint * operator+(CCPoint * th
-        002fdd18 31  46           mov        blinkLabel ,r6
-        002fdd1a 48  46           mov        placeholderLavelScale2 ,m_cursor
-        002fdd1c d0  47           blx        call
-        002fdd1e d5  f8  78  51    ldr.w      r5,[r5,#0x178 ]
-        002fdd22 20  46           mov        placeholderLavelScale2 ,m_placeholderLabel
-        002fdd24 2b  68           ldr        r3,[r5,#0x0 ]
-        002fdd26 d3  f8  8c  70    ldr.w      i,[r3,#0x8c ]
-        002fdd2a 23  68           ldr        r3,[m_placeholderLabel ,#0x0 ]
-        002fdd2c d3  f8  90  30    ldr.w      r3,[r3,#0x90 ]
-        002fdd30 98  47           blx        r3
-        002fdd32 4f  f0  7c  51    mov.w      blinkLabel ,#0x3f000000
-        002fdd36 03  46           mov        r3,placeholderAnchorPoint
-        002fdd38 30  46           mov        placeholderAnchorPoint ,r6
-        002fdd3a 5a  68           ldr        r2,[r3,#0x4 ]
-        002fdd3c a8  f2  68  fa    bl         cocos2d::CCPoint::CCPoint                        void CCPoint(CCPoint * this, flo
-        002fdd40 28  46           mov        placeholderAnchorPoint ,r5
-        002fdd42 31  46           mov        blinkLabel ,r6
-        002fdd44 b8  47           blx        i
-        002fdd46 1e  e0           b          LAB_002fdd86
-        002fdd48 38  46           mov        r0,r7
-        002fdd4a 5c  f0  35  f7    bl         std::basic_string::~basic_string                 void std::basic_string::~basic_s
-        002fdd4e 2b  f0  c7  f6    bl         __cxa_end_cleanup                                undefined __cxa_end_cleanup(unde
-                             -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
-                             LAB_002fdd52                                    XREF[2]:     002fdc04 (j) , 002fdc0e (j)   
-        002fdd52 23  68           ldr        r3,[m_placeholderLabel ,#0x0 ]
-        002fdd54 20  46           mov        placeholderAnchorPoint ,m_placeholderLabel
-        002fdd56 d3  f8  9c  30    ldr.w      r3,[r3,#0x9c ]
-        002fdd5a 98  47           blx        r3
-        002fdd5c 23  68           ldr        r3,[m_placeholderLabel ,#0x0 ]
-        002fdd5e 5b  6d           ldr        r3,[r3,#0x54 ]
-        002fdd60 90  ed  00  8a    vldr.32    s16 ,[placeholderLabelScaledContentSize->width ]
-        002fdd64 20  46           mov        placeholderLabelScaledContentSize ,m_placehold
-        002fdd66 98  47           blx        r3
-        002fdd68 23  68           ldr        r3,[m_placeholderLabel ,#0x0 ]
-        002fdd6a 5b  6c           ldr        r3,[r3,#0x44 ]
-        002fdd6c 07  ee  90  0a    vmov       s15 ,placeholderLabelScale
-        002fdd70 20  46           mov        placeholderLabelScale ,m_placeholderLabel
-        002fdd72 28  ee  27  8a    vmul.f32   s16 ,s16 ,s15
-        002fdd76 98  47           blx        r3
-        002fdd78 07  ee  90  0a    vmov       s15 ,fVar2
-        002fdd7c 77  ee  a7  7a    vadd.f32   s15 ,s15 ,s15
-        002fdd80 38  ee  27  8a    vadd.f32   s16 ,s16 ,s15
-        002fdd84 5d  e7           b          LAB_002fdc42
-                             LAB_002fdd86                                    XREF[3]:     002fdb32 (j) , 002fdb3c (j) , 
-                                                                                          002fdd46 (j)   
-        002fdd86 07  9a           ldr        r2,[sp,#__stack ]
-        002fdd88 d8  f8  00  30    ldr.w      r3,[r8,#0x0 ]=>__stack_chk_guard                 = ??
-        002fdd8c 9a  42           cmp        r2,r3
-        002fdd8e 01  d0           beq        LAB_002fdd94
-        002fdd90 b8  f7  ec  e9    blx        <EXTERNAL>::__stack_chk_fail                     undefined __stack_chk_fail()
-                             -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
-                             LAB_002fdd94                                    XREF[1]:     002fdd8e (j)   
-        002fdd94 09  b0           add        sp,#0x24
-        002fdd96 bd  ec  06  8b    vpop       {m_fontValue1 ,placeholderLabelContentSize_widt
-        002fdd9a bd  e8  f0  8f    pop.w      {m_placeholderLabel ,r5,r6,i,r8,m_cursor ,call ,
-        002fdd9e 00              ??         00h
-        002fdd9f bf              ??         BFh
+        /* === set cursor === 
+        *             v
+        *  hello world|
         */
+        m_cursor->setPosition(m_cursor->getPosition() + CCPointMake(
+            /* x */
+            (m_placeholderLabel->getContentSize().width * (1.0 - m_fontValue1) *  m_placeholderLabel->getScaleX() - 
+            (m_placeholderLabel->getContentSize().width + m_placeholderLabel->getScaleX())) + xpos, 
+            /* y */
+            space - 1.0));
     }
 }
 
 
-/* complexity: 22 */
-void CCTextInputNode::updateCursorPosition(cocos2d::CCPoint point, cocos2d::CCRect rect)
+void CCTextInputNode::updateCursorPosition(cocos2d::CCPoint point, cocos2d::CCRect rect /* rect maybe unused...*/  )
 {
+    /* A Little Sloppy but it will do for now, I'll optimize and modernize this code later... */
+    int char_population, character_count;
+    int label_count;
+    unsigned int visible, j;
+    float posX, xpos;
+
     if (std::string(m_textArea->getString()) == "")
     {
-
+        point = cocos2d::CCPointZero;
+        
+        /* find m_placeholderLabel */
         if (m_placeholderLabel == nullptr)
         {
-            unsigned int count = m_textArea->m_bitmatFont->getChildrenCount();
-            if (count == 0)
-            {
-                return;
+            
+            cocos2d::CCArray* delayedText = m_textArea->m_label->m_delayedText;
+           
+            if (delayedText->count() == 0) {
+                m_textField->m_pLens = -1;
+                return updateBlinkLabel();
             }
-            else if (count == 1)
-            {
-                m_placeholderLabel = reinterpret_cast<cocos2d::CCLabelBMFont *> (m_textArea->m_bitmatFont->getChildren()->objectAtIndex(0));
+            else if (delayedText->count() == 1) {
+                label_count = 0;
+                m_placeholderLabel = reinterpret_cast<cocos2d::CCLabelBMFont *>(delayedText->objectAtIndex(0));
+                char_population = 0;
             }
-            else
-            {
-
-                /* We need to find our missing CCLabelBMFont... */
-
-                cocos2d::CCNode *node;
-                unsigned int i = 0;
-                while (i < count)
-                {
-                    node = reinterpret_cast<cocos2d::CCNode *>(m_textArea->m_bitmatFont->getChildren()->objectAtIndex(i));
-                    node->getParent()->convertToWorldSpace(point);
-                    i += node->getChildrenCount();
+            else {                
+                label_count = delayedText->count(); 
+                visible = 0; 
+                posX = -1.0;
+                for (j = 0; j < delayedText->count(); j++){
+                    auto node = reinterpret_cast<cocos2d::CCLabelBMFont*>(delayedText->objectAtIndex(j));
+                    auto pos = node->getParent()->convertToNodeSpace(node->getPosition());
+                    auto size = node->getContentSize();
+                    xpos = (std::string(m_textField->getString()).length() + size.height * 0.5 * node->getScale()) - pos.y;
+                    character_count = visible;
+                    if (xpos < posX) {
+                        char_population = (posX < 0.0) << 0x1f;
+                        if (char_population > -1){
+                            node = m_placeholderLabel;
+                            xpos = posX;
+                        }
+                        character_count = j;
+                        if (char_population < 0){
+                            character_count = visible;
+                        }
+                    }
+                    m_placeholderLabel = node;
+                    j = character_count;
+                    posX = xpos;
                 }
             }
+            if (j == 0){
+                char_population = 0;
+            }            
+            else {
+                visible = 0;
+                char_population = 0;
+                /* Do headcount of character population */
+                while (visible < j){
+                    character_count = reinterpret_cast<cocos2d::CCNode*>(delayedText->objectAtIndex(visible))->getChildren()->count();
+                    visible += 1;
+                    char_population += character_count;
+                }
+            }
+        }
+        point = m_placeholderLabel->getPosition();
+    } else {
+        label_count = 0;
+        char_population = 0;
+        point = m_placeholderLabel->getPosition();
+    }
+    posX = point.x;
+    cocos2d::CCNode* labelParent = m_placeholderLabel->getParent();
+    cocos2d::CCPoint labelPos = m_placeholderLabel->getPosition();
+    labelParent->convertToWorldSpace(labelPos);
+    cocos2d::CCArray* labels = m_placeholderLabel->getChildren();
+    visible = j = 0;
 
-            auto point = m_placeholderLabel->getPosition();
+    /* count up our currently visible labels again */
+    for (j = 0; j < labels->count(); j++){
+        if (reinterpret_cast<cocos2d::CCNode*>(labels->objectAtIndex(j))->isVisible()){
+            visible += 1;
         }
     }
-
-
-
+    
+    if (visible != 0){
+        j = 0;
+        bool skipBlink;
+        cocos2d::CCSprite* sprite = reinterpret_cast<cocos2d::CCSprite*>(labels->objectAtIndex(visible - 1));
+        xpos = m_placeholderLabel->getLetterPosXRight(sprite, 0.0, false);
+        cocos2d::CCPoint anchorPoint = m_placeholderLabel->getAnchorPoint();
+        skipBlink = false;
+        while (j < visible){
+            sprite = reinterpret_cast<cocos2d::CCSprite*>(labels->objectAtIndex(visible - 1));
+            if (sprite->isVisible()){
+                float xPosRight = m_placeholderLabel->getLetterPosXRight(sprite, m_fontValue2, m_isChatFont);
+                xPosRight += xpos;
+                if (xPosRight >= posX){
+                    float xPosLeft = m_placeholderLabel->getLetterPosXLeft(sprite, m_fontValue2, m_isChatFont);
+                    if (xPosRight - posX < posX - ((xPosLeft + xpos) << 0x1f) < 0){
+                        j += 1;
+                    }
+                    if (j < visible){
+                        m_textField->m_pLens = j + char_population;
+                        return updateBlinkLabel();
+                    }
+                    break;
+                }
+                if ((j == visible - 1) && (label_count > 1)){
+                    m_textField->m_pLens = visible + char_population;
+                    updateBlinkLabel();
+                    skipBlink = true;
+                }
+            }
+            j += 1;
+        }
+        if (skipBlink){
+            return;
+        }
+    }
+    m_textField->m_pLens = -1;
+    return updateBlinkLabel();
 }
 
 /* this is also apart of CCTextInputNode's init function */
@@ -973,13 +901,13 @@ void CCTextInputNode::updateDefaultFontValues(std::string fontName)
     m_isChatFont = fontName != "chatFont.fnt";
     if (!m_isChatFont)
     {
-        /* CCSize ? */
+        /* Level text */
         m_fontValue2 = 20.0;
         m_fontValue1 = 1.5;
     }
     else
     {
-        /* This is likely referring to level comment's input */
+        /* Level Comments */
         m_fontValue2 = 5.0;
         m_fontValue1 = -0.5;
     }
@@ -987,35 +915,25 @@ void CCTextInputNode::updateDefaultFontValues(std::string fontName)
 
 void CCTextInputNode::updateLabel(std::string label)
 {
-    if (m_placeholderLabel == nullptr)
+    if ((m_placeholderLabel == nullptr) && (m_textArea == nullptr))
     {
-        if (m_textArea == nullptr)
-        {
-            return;
-        }
-    }
-    else
-    {
+        return;
+    } 
+    else {
         m_placeholderLabel->m_pSomeTexture = m_SomeTexture;
     }
-    if (label == "" && m_textArea != nullptr)
-    {
+    
+    if (label == "" && m_textArea != nullptr) {
         m_textArea->setString(label.c_str());
     }
-    else
-    {
+    else {
         m_placeholderLabel->setString(label.c_str());
     }
+    
     refreshLabel();
-    m_placeholderLabel->updateLabel();
-    std::string textFiledStr = m_textField->getString();
-    if (textFiledStr == "")
-    {
-        m_textField->setAnchorPoint(0xffffffff);
+    if (m_textField->getString() == std::string("")) {
+        m_textField->m_pLens = -1;
     }
     updateBlinkLabel();
 }
-
-
-
 
