@@ -9,6 +9,7 @@ I Calloc Have forked this repository for decompling other sources within 2.2 and
 For now I shall dump what I do have for 2.204 and android v2.205 in here. Feel free to submit pull requests here so I can look at them I would like this to be an official repo for the people of geode to start using temporarly...
 
 ## Update 
+- Were Preparing for 2.206 so I'm not making anymore updates over here currently and I'm doing other things, currently delevoping tools to automate some of the stuff we learned over the past several months that can help us with 2.2006. The Knowlege from this repo will help us make the next repository for the 2.206 update.
 - 2.206 is coming soon so we will make another repository possibly for that version and I might end up redoing everything due to how messy this repo feels to me...
 - Even Better, Wylie told me he will be working on this stuff in the future so I will be archiving this repo up when that happens and then start moving everything that I have done to it. 
 
