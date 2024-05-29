@@ -116,6 +116,7 @@
 #include "Layers/MultiplayerLayer.h"
 /* This one might possibly one of Robtop's Secret tools */
 #include "Layers/LevelFeatureLayer.h"
+#include "Layers/CCBlockLayer.h"
 
 
 // Manager related classes
