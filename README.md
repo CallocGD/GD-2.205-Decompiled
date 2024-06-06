@@ -8,6 +8,9 @@
 I Calloc Have forked this repository for decompling other sources within 2.2 and beyond while wylie is off doing other things (Until he makes a 2.2 repository)
 For now I shall dump what I do have for 2.204 and android v2.205 in here. Feel free to submit pull requests here so I can look at them I would like this to be an official repo for the people of geode to start using temporarly...
 
+## Important
+- This repo is not in use anymore and I have moved to [2.206](https://github.com/CallocGD/GD-2.206-Decompiled)
+
 ## Update 
 - I now have a copy of 2.206 We will be archiving up this repository soon and start making a new one. Feel free to dm me if you have any insight or updated cocos2dx headers for me to use.
 
