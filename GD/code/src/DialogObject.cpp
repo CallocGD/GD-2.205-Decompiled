@@ -1,6 +1,6 @@
 #include "../headers/includes.h"
 
-DialogObject* DialogObject::create(std::string npc, std::string text, int type, float width, bool canSkip, cocos2d::ccColor3B color)
+DialogObject* DialogObject::create(std::string npc, std::string text, int type, float width, bool canSkip, cocos2d::ccColor3B colour)
 {
 	auto pRet = new DialogObject;
 
@@ -24,4 +24,3 @@ bool DialogObject::init(std::string npc, std::string text, int type, float width
 	m_color = colour;
 	return true;
 }
-

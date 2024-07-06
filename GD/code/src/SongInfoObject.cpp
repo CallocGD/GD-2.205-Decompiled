@@ -1,4 +1,7 @@
 #include "includes.h"
+#include "cocos2d\cocos-headers\cocos2dx\support\zip_support\ZipUtils.h"
+
+
 
 std::vector<std::string>splitToVector(std::string str, const char* delim){
     std::vector<std::string>vect;
@@ -18,11 +21,12 @@ std::vector<std::string>splitToVector(std::string str, const char* delim){
     return vect;
 }
 
+
 void SongInfoObject::addTags(std::string tagData){
     if (tagData.length() != 0) {
 
         /* I don't know exactly what is going on here, this is my best guess. 
-         * I am not familiar with these tags... */
+         * I am not familiar with these tags...*/
         if (tagData == "."){
             auto vect = splitToVector(tagData, ".");
             for (size_t i = 0; i < vect.size(); i++){
@@ -106,7 +110,7 @@ SongInfoObject* SongInfoObject::create(cocos2d::CCDictionary *dict){
         dict->valueForKey("5")->floatValue(),
         dict->valueForKey("6")->getCString(),
         dict->valueForKey("7")->getCString(),
-        dict->valueForKey("10")->getCString(),
+        cocos2d::ZipUtils::urlDecode(dict->valueForKey("10")->getCString()),
         dict->valueForKey("9")->intValue()
     );
 }
@@ -131,9 +135,10 @@ SongInfoObject* SongInfoObject::createWithCoder(DS_Dictionary* dsdict){
     );
 }
 
-/* Skipped: Has Unsolved functions */
+/* Skipped: Unsolved functions */
 /* basic_string * __thiscall SongInfoObject::getTagsString(SongInfoObject *this) */
 
 bool SongInfoObject::containsTag(int tagID){
     return m_tags.find(tagID) != m_tags.end();
 }
+
