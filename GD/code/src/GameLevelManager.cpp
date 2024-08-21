@@ -223,10 +223,18 @@ cocos2d::CCArray * GameLevelManager::createAndGetLevels(std::string response)
 }
 
 
-/* TODO: Coming soon... */
-cocos2d::CCArray* GameLevelManager::createAndGetMapPacks(std::string p0)
+cocos2d::CCArray * GameLevelManager::createAndGetMapPacks(std::string resp)
 {
-    return;
+    cocos2d::CCArray* mappacks = cocos2d::CCArray::create();
+    cocos2d::CCArray* array = splittoCCArray(resp, "|");
+    for (unsigned int i = 0; i < array->count(); i++) {
+        dict = responseToDict(cocos2d::CCString::getCString(cocos2d::CCArray::objectAtIndex(array,uVar2)),false);
+        GJMapPack* mappack = GJMapPack::create(dict);
+        if (mappack != nullptr) {
+            cocos2d::CCArray::addObject(mappacks, mappack);
+        }
+    }
+    return mappacks;
 }
 
 
