@@ -96,10 +96,10 @@ void TableView::cancelAndStoleTouch(cocos2d::CCTouch *touch, cocos2d::CCEvent *e
     cocos2d::CCSet* set = new cocos2d::CCSet;
     set->addObject(touch);
     set->autorelease();
+    m_cancellingTouches = true;
     cocos2d::CCDirector::sharedDirector()->getKeyboardDispatcher();
-    // Unknown Call....
-    // (**(code **)(*piVar1 + 0x34))(piVar1,this_00,event);
-    // *(undefined *)&this[1].vtable = 0;
+    cocos2d::CCDirector::sharedDirector()->getTouchDispatcher()->touchesCancelled(set, event);
+    m_cancellingTouches = false;
     claimTouch(touch);
 }
 
