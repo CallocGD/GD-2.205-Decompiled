@@ -2253,10 +2253,82 @@ void GameLevelManager::uploadAccountComment(std::string p0)
 }
 
 
-void GameLevelManager::uploadComment(std::string p0, CommentType p1, int p2, int p3)
-{
-    return;
-}
+
+// Requested from CNSL, I do not have the time that I used to to work on this but here is my best guess. 
+// Still derusting as is. Pull requests apperciated. - Calloc
+// void GameLevelManager::uploadComment(std::string comment, kCommentType commentType, int ID, int percent)
+// {
+
+  
+//     comment = LevelTools::base64EncodeString(comment);
+//     const char* postCommentKey =  (commentType == kCommentTypeLevelType) ? getPostCommentKey(ID) : "acc_comment";
+//     // cocos2d::CCNode* object = m_friendReqAndUserBlocks->objectForKey(postCommentKey);
+//     // if (object != (CCObject *)0x0){
+//     //     return;
+//     // }
+//     m_friendReqAndUserBlocks->setObject(cocos2d::CCNode::create() , postCommentKey);
+//     // makeTimeStamp(postCommentKey);
+//     std::string m_playerName = removeDelimiterChars(GameManager::sharedState()->m_playerName, 0);
+//     std::string m_playerUDID = removeDelimiterChars(GameManager::sharedState()->m_playerUDID, 1);
+//     std::string postData = getBasePostString() + cocos2d::CCString::createWithFormat("&userName=%s&comment=%s&secret=%s",m_playerName, comment, Wmfd2893gb7)->getCString();
+
+//     if (commentType == kCommentTypeLevelType) {
+//       postData += "&levelID=";
+//       postData += cocos2d::CCString::createWithFormat("%i",ID)->getCString();
+//       if (0 < percent) {
+//         postData += "&percent=";
+//         postData += cocos2d::CCString::createWithFormat("%i", percent)->getCString();
+//       }
+//     }
+//     else {
+//       postData += "&cType=";
+//       postData += cocos2d::CCString::createWithFormat("%i",cType)->getCString();
+//     }
+
+//     std::string raw_chk = cocos2d::CCString::createWithFormat("%s%s%i%i%i",m_playerName, comment , ID,percent,commentType)->getCString() + xI25fpAapCQg;
+//     std::string hexString;
+//     unsigned char* hash;
+//     rtsha1::calc(raw_chk, raw_chk.len(), hash);
+
+//     rtsha1::toHexString(hash, hexString);
+//     cocos2d::ZipUtils::base64EncodeEnc(  , "29481");
+//     std::basic_string::~basic_string(&bStack_88);
+//     std::basic_string::~basic_string(&bStack_8c);
+//     std::basic_string::operator+=(&local_98,"&chk=");
+//     std::basic_string::operator+=(&local_98,&bStack_90);
+//     this_00 = &bStack_78;
+//     if (commentType == kCommentTypeLevelType) {
+//       std::basic_string::basic_string
+//                 (&bStack_84,"https://www.boomlings.com/database/uploadGJComment21.php");
+//       std::basic_string::basic_string(&bStack_80,(char *)local_98._M_data);
+//       std::basic_string::basic_string(&bStack_7c,postCommentKey);
+//       ProcessHttpRequest(this,&bStack_84,&bStack_80,&bStack_7c,0xd);
+//       std::basic_string::~basic_string(&bStack_7c);
+//       std::basic_string::~basic_string(&bStack_80);
+//       this_00 = &bStack_84;
+//     }
+//     else {
+//       std::basic_string::basic_string
+//                 (this_00,"https://www.boomlings.com/database/uploadGJAccComment20.php");
+//       std::basic_string::basic_string(&bStack_74,(char *)local_98._M_data);
+//       std::basic_string::basic_string(&bStack_70,postCommentKey);
+//       ProcessHttpRequest(this,this_00,&bStack_74,&bStack_70,0xd);
+//       std::basic_string::~basic_string(&bStack_70);
+//       std::basic_string::~basic_string(&bStack_74);
+//     }
+//     std::basic_string::~basic_string(this_00);
+//     std::basic_string::~basic_string(&bStack_90);
+//     std::basic_string::~basic_string(&local_94);
+//     std::basic_string::~basic_string(&local_98);
+//     std::basic_string::~basic_string(&m_playerUDID);
+//     std::basic_string::~basic_string(&m_playerName);
+
+//     if (local_2c != _const char* postCommentKeytack_chk_guard) {
+//       func_0x002b616c();
+//       return;
+//     }
+//     return;
+// }
 
 
 void GameLevelManager::uploadFriendRequest(int p0, std::string p1)
