@@ -2374,9 +2374,9 @@ void GameLevelManager::uploadUserMessage(int p0, std::string p1, std::string p2)
 }
 
 
-int GameLevelManager::userIDForAccountID(int p0)
+int GameLevelManager::userIDForAccountID(int accountID)
 {
-    return;
+    return m_accountIDtoUserIDDict->valueForKey(accountID)->intValue();
 }
 
 
