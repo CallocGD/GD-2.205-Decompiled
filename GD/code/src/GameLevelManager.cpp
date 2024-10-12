@@ -2225,19 +2225,18 @@ void GameLevelManager::updateLevelOrders()
 
 void GameLevelManager::updateLevelRewards(GJGameLevel* level)
 {
-  GameStatsManager *GSM = GameStatsManager::sharedState();
-  if (GSM->hasCompletedLevel(level)) {
+  if (GameStatsManager::sharedState()->hasCompletedLevel(level)) {
     level->setNormalPercent(100);
     if (level->m_demon_Random - level->m_demon_Seed == 1) {
       GameStatsManager::sharedState()->completedDemonLevel(level);
     }
     if (0 < level->m_stars_Random - level->m_stars_Seed) {
-      GameStatsManager::sharedState()->completedStarLevel(GSM,level);
+      GameStatsManager::sharedState()->completedStarLevel(level);
     }
     GameStatsManager::sharedState()->checkCoinsForLevel(level);
   }
   if (0 < level->m_stars_Random - level->m_stars_Seed) {
-       GameStatsManager::sharedState()->awardCurrencyForLevel(GSM,level);
+       GameStatsManager::sharedState()->awardCurrencyForLevel(level);
   }
 }
 
